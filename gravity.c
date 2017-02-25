@@ -8,6 +8,9 @@
 #define ringHeight 10
 #define ringWidth 150
 
+#define nomScreenHeight 1920
+#define nomScreenWidth 1080
+
 S2D_Window *window;
 
 
@@ -17,9 +20,6 @@ bool capsulesDefined = false;
 bool playersDefined = false;
 bool setupDefined = false;
 float friction = 0.98;
-
-int nomScreenHeight = 1920;
-int nomScreenWidth = 1080;
 
 #ifdef ROTATE
     int screenHeight = 1080;
@@ -132,7 +132,7 @@ Capsule capsule2;
 void defineCapsules(){
     if (capsulesDefined == false){
         capsule1.x = 0;
-        capsule1.y =0;
+        capsule1.y = 0;
         capsule1.width = capsuleWidth;
         capsule1.height = capsuleHeight;
         capsule1.velX = 0;
@@ -161,6 +161,10 @@ typedef struct Ring {
     S2D_Color *color;
 } Ring;
 
+Ring ring1 = {.x = 100, .y = nomScreenHeight, .width = ringWidth, .height = ringHeight, .color = &red};
+Ring ring2 = {.x = 300, .y = nomScreenHeight, .width = ringWidth, .height = ringHeight, .color = &red};
+Ring ring3 = {.x = 400, .y = nomScreenHeight, .width = ringWidth, .height = ringHeight, .color = &red};
+
 typedef struct Ringmaster {
     int rings;
     Ring *one;
@@ -172,29 +176,7 @@ typedef struct Ringmaster {
     Capsule *capsule;
 } Ringmaster;
 
-void defineRing(Ring *ring, int x, S2D_Color *color){
-    ring->x = x;
-    ring->y = nomScreenHeight;
-    ring->width = ringWidth;
-    ring->height = ringHeight;
-    ring->color = color;
-}
-
-Ring createRing () {
-    Ring ring;
-    return ring;
-}
-
-Ringmaster ringmaster1;
-
-void defineRingmasters(){
-    ringmaster1.velY = 1;
-    ringmaster1.maxY = 10;
-    ringmaster1.rings = 0;
-    ringmaster1.color = &red;
-    ringmaster1.capsule = &capsule1;
-}
-
+Ringmaster ringmaster1 = {.rings = 1, .one = &ring1, .two = &ring2, .three = &ring3, .velY = 5.0, .maxY = 10, .color = &red, .capsule = &capsule1};
 
 void convertColor(int red, int green, int blue, int alpha, S2D_Color *color) {
     color->r = red / 255;
@@ -273,7 +255,12 @@ void drawCapsule(Capsule *cap){
 }
 
 void drawRing(Ring *ring){
-    drawRectangle(ring->x, ring->y, ring->width, ring->height, &red);
+    if (orientation == 1){
+        drawRectangle(ring->x, ring->y, ring->height, ring->width, ring->color);
+    } else {
+        drawRectangle(ring->x, ring->y, ring->width, ring->height, ring->color);
+    }
+
 }
 
 void reorderRings (Ringmaster *ringmaster){
@@ -289,52 +276,21 @@ void reorderRings (Ringmaster *ringmaster){
 void updateRingmaster(Ringmaster *ringmaster){
     int playArea = nomScreenHeight - ringmaster->capsule->y - ringmaster->capsule->height;
     int ringSpacing =  playArea / 3;
-    // If less than three rings
-    if (ringmaster->rings < 3){
-        // If no rings, make one
-        if (ringmaster->rings == 0){
-            Ring ring1;
-            ringmaster->one = &ring1;
-            defineRing(ringmaster->one, 100, ringmaster->color);
-            printf("Created first ring!\n");
-            ringmaster->rings = 1;
-        }
-        // If only one ring: make a second and update the first
-        else if (ringmaster->rings == 1){
-
-            if (ringmaster->one->y < (nomScreenHeight - ringSpacing * 2)){
-                Ring ring2;
-                ringmaster->two = &ring2;
-                defineRing(ringmaster->two, 100, ringmaster->color);
-                printf("Created second ring!\n");
-                printf("First ring's Y: %d\n", ringmaster->one->y);
-                ringmaster->rings = 2;
-
-
-            }
-        }
-        // If only two rings: make a third and update others
-        else if (ringmaster->rings == 2){
-            // ringmaster->one->y = ringmaster->one->y + ringmaster->velY;
-            // ringmaster->two->y = ringmaster->two->y + ringmaster->velY;
-            if (ringmaster->one->y < (nomScreenHeight - ringSpacing * 3)){
-                Ring ring3;
-                ringmaster->three = &ring3;
-                defineRing(ringmaster->three, 100, ringmaster->color);
-                printf("Created third ring!\n");
-                printf("First ring's Y: %d\n", ringmaster->one->y);
-                printf("Second ring's Y: %d\n", ringmaster->two->y);
-                ringmaster->rings = 3;
-            }
+    // Only draw first ring until at 1/3 playArea
+    if (ringmaster->rings == 1){
+        if (ringmaster->one->y < (nomScreenHeight - ringSpacing)){
+            ringmaster->rings = 2;
         }
     }
-    else {
-        // Update ring position
-        // ringmaster->one->y = ringmaster->one->y + ringmaster->velY;
-        // ringmaster->two->y = ringmaster->two->y + ringmaster->velY;
-        // ringmaster->three->y = ringmaster->three->y + ringmaster->velY;
-        // Check if hit check needed
-        if (ringmaster->one->y < (playArea + ringmaster->one->height)){
+    // Only draw two rings until at 2/3 playArea
+    else if (ringmaster->rings == 2){
+        if (ringmaster->two->y < (nomScreenHeight - ringSpacing)){
+            ringmaster->rings = 3;
+        }
+    }
+    // Draw all three rings and check for hits
+    else if (ringmaster->rings == 3){
+        if (ringmaster->one->y < (nomScreenHeight - playArea - ringmaster->one->height)){
             // Define hit targets
             int ringX = ringmaster->one->x;
             int ringMax = ringX + ringmaster->one->width;
@@ -344,6 +300,7 @@ void updateRingmaster(Ringmaster *ringmaster){
             if (ringX < capX && capMax < ringMax){
                 ringmaster->capsule->player->score += 100;
                 printf("HIT! Player score: %d\n", ringmaster->capsule->player->score);
+                ringmaster->one->y = nomScreenHeight;
                 reorderRings(ringmaster);
             }
             else {
@@ -351,8 +308,8 @@ void updateRingmaster(Ringmaster *ringmaster){
                 ringmaster->one->y = nomScreenHeight;
                 ringmaster->one->x = 100;
                 printf("MISS! Capsule heat: %d\n", ringmaster->capsule->heat);
+                ringmaster->one->y = nomScreenHeight;
                 reorderRings(ringmaster);
-
             }
         }
     }
@@ -361,19 +318,25 @@ void updateRingmaster(Ringmaster *ringmaster){
 void drawRingmaster (Ringmaster *ringmaster){
     switch (ringmaster->rings) {
         case 1:
-            printf("Drawing one ring\n");
-            //int yOne = ringmaster->one->y - ringmaster->velY;
-            //ringmaster->one->y = yOne;
-            printf("Ring one Y: %d\n", ringmaster->one->y);
+            //printf("Drawing one ring\n");
+            //printf("Ring one Y: %d\n", ringmaster->one->y);
+            ringmaster->one->y = ringmaster->one->y - ringmaster->velY;
             drawRing(ringmaster->one);
             break;
         case 2:
-            printf("Drawing two rings\n");
+            //printf("Drawing two rings\n");
+            //printf("Ring one Y: %d\n", ringmaster->one->y);
+            ringmaster->one->y = ringmaster->one->y - ringmaster->velY;
+            ringmaster->two->y = ringmaster->two->y - ringmaster->velY;
             drawRing(ringmaster->one);
             drawRing(ringmaster->two);
             break;
         case 3:
-            printf("Drawing three rings\n");
+            //printf("Drawing three rings\n");
+            //printf("Ring one Y: %d\n", ringmaster->one->y);
+            ringmaster->one->y = ringmaster->one->y - ringmaster->velY;
+            ringmaster->two->y = ringmaster->two->y - ringmaster->velY;
+            ringmaster->three->y = ringmaster->three->y - ringmaster->velY;
             drawRing(ringmaster->one);
             drawRing(ringmaster->two);
             drawRing(ringmaster->three);
@@ -439,7 +402,6 @@ void update() {
     if (setupDefined == false){
         defineCapsules();
         definePlayers();
-        defineRingmasters();
         setupDefined = true;
     }
 
