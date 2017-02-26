@@ -1,6 +1,6 @@
 #include <simple2d.h>
 
-//#define ROTATE
+#define ROTATE
 
 #define capsuleHeight 50
 #define capsuleWidth 50
@@ -14,7 +14,7 @@
 S2D_Window *window;
 
 
-// GLOBAL VARIABLES
+////////// GLOBAL VARIABLES //////////
 bool running = true;
 bool capsulesDefined = false;
 bool playersDefined = false;
@@ -33,59 +33,93 @@ float friction = 0.98;
 
 
 
-// COLOR DEFINITION
-S2D_Color gray;
-S2D_Color green;
-S2D_Color red;
-S2D_Color black;
-S2D_Color white;
+////////// COLOR DEFINITIONS //////////
+S2D_Color gray = {.r = 0.5, .g = 0.5, .b = 0.5, .a = 1.0};
+S2D_Color green = {.r = 0.0, .g = 1.0, .b = 0.0, .a = 1.0};
+S2D_Color red = {.r = 1.0, .g = 0.0, .b = 0.0, .a = 1.0};
+S2D_Color black = {.r = 0.0, .g = 0.0, .b = 0.0, .a = 1.0};
+S2D_Color white = {.r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0};
 S2D_Color blue = {.r = 0.0, .g = 0.0, .b = 1.0, .a = 1.0};
+S2D_Color lightBlue;
+S2D_Color lightGreen;
 
-void defineColors(){
-    // Define green
-    green.r = 0.0;
-    green.g = 1.0;
-    green.b = 0.0;
-    green.a = 1.0;
-
-    // Define red
-    red.r = 1.0;
-    red.g = 0.0;
-    red.b = 0.0;
-    red.a = 1.0;
-
-    // Define white
-    white.r = 1.0;
-    white.g = 1.0;
-    white.b = 1.0;
-    white.a = 1.0;
-
-    // Define black
-    black.r = 0.0;
-    black.g = 0.0;
-    black.b = 0.0;
-    black.a = 1.0;
-
-    // Define gray
-    gray.r = 0.5;
-    gray.g = 0.5;
-    gray.b = 0.5;
-    gray.a = 1.0;
-
-    // Define blue
-    blue.r = 0.0;
-    blue.g = 0.0;
-    blue.b = 1.0;
-    blue.a = 1.0;
-
-    S2D_Color darkGreen;
-
-    //convertColor(&darkGreen);
-
+void convertColor(S2D_Color *color, float red, float green, float blue) {
+    color->r = red / 255;
+    color->g = green / 255;
+    color->b = blue / 255;
+    color->a = 1.0;
 }
 
-// GAME STUCTURES
+void defineColors(){
+    // Use convert color to define colors using regular RGB values
+    convertColor(&lightBlue, 115, 179, 249);
+    convertColor(&lightGreen, 147, 229, 115);
+}
 
+////////// GAME STRUCTURES //////////
+
+// LEVELS
+typedef struct Level {
+    char name[50];
+    int duration;
+    int multiplier;
+    int bonus;
+    S2D_Color *startingColor;
+    S2D_Color *endingColor;
+    bool completed;
+} Level;
+
+Level exosphere = {
+    .name = "exosphere",
+    .duration = 15,
+    .multiplier = 1,
+    .bonus = 1000,
+    .startingColor = &black,
+    .endingColor = &gray,
+    .completed = false
+};
+
+Level thermosphere = {
+    .name = "thermosphere",
+    .duration = 15,
+    .multiplier = 1,
+    .bonus = 1000,
+    .startingColor = &black,
+    .endingColor = &gray,
+    .completed = false
+};
+
+Level mesosphere = {
+    .name = "thermosphere",
+    .duration = 15,
+    .multiplier = 1,
+    .bonus = 1000,
+    .startingColor = &black,
+    .endingColor = &gray,
+    .completed = false
+};
+
+Level stratosphere = {
+    .name = "thermosphere",
+    .duration = 15,
+    .multiplier = 1,
+    .bonus = 1000,
+    .startingColor = &black,
+    .endingColor = &gray,
+    .completed = false
+};
+
+Level troposphere = {
+    .name = "thermosphere",
+    .duration = 15,
+    .multiplier = 1,
+    .bonus = 1000,
+    .startingColor = &black,
+    .endingColor = &gray,
+    .completed = false
+};
+
+// PLAYERS
 typedef struct Player {
     char name[50];
     int score;
@@ -94,24 +128,21 @@ typedef struct Player {
     S2D_Image *image;
 } Player;
 
-Player player1;
-Player player2;
+Player player1 = {
+    .name = "Tucker",
+    .score = 0,
+    .left = false,
+    .right = false
+};
 
-void definePlayers(){
-    if (playersDefined == false){
-        strcpy(player1.name, "Tucker");
-        player1.score = 0;
-        player1.left = false;
-        player1.right = false;
+Player player2 = {
+    .name = "Spencer",
+    .score = 0,
+    .left = false,
+    .right = false
+};
 
-        strcpy(player2.name, "Spencer");
-        player2.score = 0;
-        player2.left = false;
-        player2.right = false;
-        playersDefined = true;
-    }
-}
-
+// CAPSULES
 typedef struct Capsule {
     int x;
     int y;
@@ -126,31 +157,33 @@ typedef struct Capsule {
     Player *player;
 } Capsule;
 
-Capsule capsule1;
-Capsule capsule2;
+Capsule capsule1 = {
+    .x = 0,
+    .y = 0,
+    .width = capsuleWidth,
+    .height = capsuleHeight,
+    .velX = 0,
+    .velY = 0,
+    .maxX = 20,
+    .maxY = 10,
+    .heat = 0,
+    .player = &player1,
+    .color = &green
+};
 
-void defineCapsules(){
-    if (capsulesDefined == false){
-        capsule1.x = 0;
-        capsule1.y = 0;
-        capsule1.width = capsuleWidth;
-        capsule1.height = capsuleHeight;
-        capsule1.velX = 0;
-        capsule1.velY = 0;
-        capsule1.maxX = 20;
-        capsule1.maxY = 10;
-        capsule1.heat = 0;
-
-        capsule2 = capsule1;
-
-        capsule1.player = &player1;
-        capsule1.color = &green;
-        capsule2.player = &player2;
-        capsule2.color = &blue;
-        capsulesDefined = true;
-    }
-
-}
+Capsule capsule2 = {
+    .x = nomScreenWidth,
+    .y = 0,
+    .width = capsuleWidth,
+    .height = capsuleHeight,
+    .velX = 0,
+    .velY = 0,
+    .maxX = 20,
+    .maxY = 10,
+    .heat = 0,
+    .player = &player2,
+    .color = &blue
+};
 
 // RINGS
 typedef struct Ring {
@@ -161,10 +194,55 @@ typedef struct Ring {
     S2D_Color *color;
 } Ring;
 
-Ring ring1 = {.x = 100, .y = nomScreenHeight, .width = ringWidth, .height = ringHeight, .color = &red};
-Ring ring2 = {.x = 300, .y = nomScreenHeight, .width = ringWidth, .height = ringHeight, .color = &red};
-Ring ring3 = {.x = 400, .y = nomScreenHeight, .width = ringWidth, .height = ringHeight, .color = &red};
+Ring ring1 = {
+    .x = 0,
+    .y = nomScreenHeight,
+    .width = ringWidth,
+    .height = ringHeight,
+    .color = &lightGreen
+};
 
+Ring ring2 = {
+    .x = 0,
+    .y = nomScreenHeight,
+    .width = ringWidth,
+    .height = ringHeight,
+    .color = &lightGreen
+};
+
+Ring ring3 = {
+    .x = 0,
+    .y = nomScreenHeight,
+    .width = ringWidth,
+    .height = ringHeight,
+    .color = &lightGreen
+};
+
+Ring ring4 = {
+    .x = 0,
+    .y = nomScreenHeight,
+    .width = ringWidth,
+    .height = ringHeight,
+    .color = &lightBlue
+};
+
+Ring ring5 = {
+    .x = 0,
+    .y = nomScreenHeight,
+    .width = ringWidth,
+    .height = ringHeight,
+    .color = &lightBlue
+};
+
+Ring ring6 = {
+    .x = 0,
+    .y = nomScreenHeight,
+    .width = ringWidth,
+    .height = ringHeight,
+    .color = &lightBlue
+};
+
+// RINGMASTER
 typedef struct Ringmaster {
     int rings;
     Ring *one;
@@ -172,24 +250,80 @@ typedef struct Ringmaster {
     Ring *three;
     float velY;
     int maxY;
+    bool delay;
+    int count;
+    bool randomized;
     S2D_Color *color;
     Capsule *capsule;
 } Ringmaster;
 
-Ringmaster ringmaster1 = {.rings = 1, .one = &ring1, .two = &ring2, .three = &ring3, .velY = 5.0, .maxY = 10, .color = &red, .capsule = &capsule1};
+Ringmaster ringmaster1 = {
+    .rings = 1,
+    .one = &ring1,
+    .two = &ring2,
+    .three = &ring3,
+    .velY = 5.0,
+    .maxY = 10,
+    .delay = false,
+    .count = 0,
+    .randomized = false,
+    .color = &lightGreen,
+    .capsule = &capsule1
+};
 
-void convertColor(int red, int green, int blue, int alpha, S2D_Color *color) {
-    color->r = red / 255;
-    color->g = green / 255;
-    color->b = blue / 255;
-    color->a = alpha / 100;
-}
+Ringmaster ringmaster2 = {
+    .rings = 1,
+    .one = &ring4,
+    .two = &ring5,
+    .three = &ring6,
+    .velY = 5.0,
+    .maxY = 10,
+    .delay = true,
+    .count = 0,
+    .randomized = false,
+    .color = &lightBlue,
+    .capsule = &capsule2
+};
+
+// GAME
+typedef struct Game {
+    int gameMode;
+    bool gameOver;
+    int level;
+    int players;
+    Level *levelOne;
+    Level *levelTwo;
+    Level *levelThree;
+    Level *levelFour;
+    Level *levelFive;
+    Player *player1;
+    Player *player2;
+    Capsule *capsule1;
+    Capsule *capsule2;
+} Game;
+
+Game game = {
+    .gameMode = 3,
+    .gameOver = false,
+    .level = 1,
+    .players = 2,
+    .levelOne = &exosphere,
+    .levelTwo = &thermosphere,
+    .levelThree = &mesosphere,
+    .levelFour = &stratosphere,
+    .levelFive = &troposphere
+};
+
+////////// DRAWING FUNCTIONS //////////
 
 void drawRectangle(int x, int y, int width, int height, S2D_Color *color) {
     if (orientation == 1){
         int tempY = y;
         y = x;
-        x = nomScreenHeight - tempY;
+        x = tempY;
+        int tempWidth = width;
+        width = height;
+        height = tempWidth;
     }
 
     S2D_DrawQuad(
@@ -207,28 +341,45 @@ void drawRectangle(int x, int y, int width, int height, S2D_Color *color) {
 void updateCapsule(Capsule *cap){
     //printf("Player 1 left = %s \n", player1->left ? "true" : "false");
     //printf("Player 1 right = %s \n", player1->right ? "true" : "false");
-    if (cap->player->right == true){
-        cap->velX = cap->velX + 1;
-        if (cap->velX > cap->maxX){
-            cap->velX = cap->maxX;
+    if (orientation == 1){
+        if (cap->player->right == true){
+            cap->velX = cap->velX - 1;
+            if (cap->velX < -cap->maxX){
+                cap->velX = -cap->maxX;
+            }
+        }
+        if (cap->player->left == true){
+            cap->velX = cap->velX + 1;
+            if (cap->velX > cap->maxX){
+                cap->velX = cap->maxX;
+            }
+        }
+    }
+    else {
+        if (cap->player->right == true){
+            cap->velX = cap->velX + 1;
+            if (cap->velX > cap->maxX){
+                cap->velX = cap->maxX;
+            }
+        }
+        if (cap->player->left == true){
+            cap->velX = cap->velX - 1;
+            if (cap->velX < -cap->maxX){
+                cap->velX = -cap->maxX;
+            }
         }
     }
 
-    if (cap->player->left == true){
-        cap->velX = cap->velX - 1;
-        if (cap->velX < -cap->maxX){
-            cap->velX = -cap->maxX;
-        }
-    }
 
 }
 
 void drawCapsule(Capsule *cap){
+    // Add friction quotiant to slow movement
     cap->velX *= friction;
-
+    // Temp variables to hold velocity + current location
     int x = cap->x + cap->velX;
     int y = cap->y + cap->velY;
-
+    // If new x is outside field of play, bring it in, kill excess velocity (improves responsiveness)
     if ((x + cap->width) > nomScreenWidth){
         x = nomScreenWidth - cap->width;
         cap->velX = 0;
@@ -236,31 +387,25 @@ void drawCapsule(Capsule *cap){
         x = 0;
         cap->velX = 0;
     }
-
-
+    // If new y is outside field of play, bring it in.
     if ((y + cap->height) > nomScreenHeight - 200){
         y = nomScreenHeight - cap->height - 200;
     } else if (y < 100) {
         y = 100;
     }
-
+    // Update capsule values to reflect temp values
     cap->x = x;
     cap->y = y;
-
+    // If velocity is close to zero, make it zero.
     if (cap->velX < 0.1 && cap->velX > -0.1){
         cap->velX = 0;
     }
-
+    // Draw the capsule at the updated location.
     drawRectangle(x, y, cap->width, cap->height, cap->color);
 }
 
 void drawRing(Ring *ring){
-    if (orientation == 1){
-        drawRectangle(ring->x, ring->y, ring->height, ring->width, ring->color);
-    } else {
-        drawRectangle(ring->x, ring->y, ring->width, ring->height, ring->color);
-    }
-
+    drawRectangle(ring->x, ring->y, ring->width, ring->height, ring->color);
 }
 
 void reorderRings (Ringmaster *ringmaster){
@@ -276,6 +421,12 @@ void reorderRings (Ringmaster *ringmaster){
 void updateRingmaster(Ringmaster *ringmaster){
     int playArea = nomScreenHeight - ringmaster->capsule->y - ringmaster->capsule->height;
     int ringSpacing =  playArea / 3;
+    if (ringmaster->randomized == false){
+        ringmaster->one->x = rand() % (nomScreenWidth - ringWidth) + 1;
+        ringmaster->two->x = rand() % (nomScreenWidth - ringWidth) + 1;
+        ringmaster->three->x = rand() % (nomScreenWidth - ringWidth) + 1;
+        ringmaster->randomized = true;
+    }
     // Only draw first ring until at 1/3 playArea
     if (ringmaster->rings == 1){
         if (ringmaster->one->y < (nomScreenHeight - ringSpacing)){
@@ -301,14 +452,14 @@ void updateRingmaster(Ringmaster *ringmaster){
                 ringmaster->capsule->player->score += 100;
                 printf("HIT! Player score: %d\n", ringmaster->capsule->player->score);
                 ringmaster->one->y = nomScreenHeight;
+                ringmaster->one->x = rand() % (nomScreenWidth - ringWidth) + 1;
                 reorderRings(ringmaster);
             }
             else {
                 ringmaster->capsule->heat += 100;
-                ringmaster->one->y = nomScreenHeight;
-                ringmaster->one->x = 100;
                 printf("MISS! Capsule heat: %d\n", ringmaster->capsule->heat);
                 ringmaster->one->y = nomScreenHeight;
+                ringmaster->one->x = rand() % (nomScreenWidth - ringWidth) + 1;
                 reorderRings(ringmaster);
             }
         }
@@ -318,10 +469,18 @@ void updateRingmaster(Ringmaster *ringmaster){
 void drawRingmaster (Ringmaster *ringmaster){
     switch (ringmaster->rings) {
         case 1:
+            if (ringmaster->delay == true){
+                ringmaster->count++;
+                if (ringmaster->count >= 50){
+                    ringmaster->delay = false;
+                }
+            }
+            else {
+                ringmaster->one->y = ringmaster->one->y - ringmaster->velY;
+                drawRing(ringmaster->one);
+            }
             //printf("Drawing one ring\n");
             //printf("Ring one Y: %d\n", ringmaster->one->y);
-            ringmaster->one->y = ringmaster->one->y - ringmaster->velY;
-            drawRing(ringmaster->one);
             break;
         case 2:
             //printf("Drawing two rings\n");
@@ -399,15 +558,10 @@ void on_key(S2D_Event e, const char *key) {
 
 // UPDATE ALL PLAY PARAMETERS
 void update() {
-    if (setupDefined == false){
-        defineCapsules();
-        definePlayers();
-        setupDefined = true;
-    }
-
     updateCapsule(&capsule1);
     updateCapsule(&capsule2);
     updateRingmaster(&ringmaster1);
+    updateRingmaster(&ringmaster2);
 
 }
 
@@ -416,6 +570,7 @@ void render() {
     drawCapsule(&capsule1);
     drawCapsule(&capsule2);
     drawRingmaster(&ringmaster1);
+    drawRingmaster(&ringmaster2);
 
 }
 
