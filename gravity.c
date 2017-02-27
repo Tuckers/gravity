@@ -494,9 +494,13 @@ void reorderRings (Ringmaster *ringmaster){
     Ring *one = ringmaster->one;
     Ring *two = ringmaster->two;
     Ring *three = ringmaster->three;
+    Ring *four = ringmaster->four;
+    Ring *five = ringmaster->five;
     ringmaster->one = two;
     ringmaster->two = three;
-    ringmaster->three = one;
+    ringmaster->three = four;
+    ringmaster->four = five;
+    ringmaster->five = one;
 }
 
 void randomizeRings (Ringmaster *ringmaster){
@@ -519,6 +523,7 @@ void checkHit (Ringmaster *ringmaster){
     if (ringX < capX && capMax < ringMax){
         ringmaster->capsule->player->score += 100;
         printf("HIT! Player score: %d\n", ringmaster->capsule->player->score);
+        ringmaster->rings--;
         ringmaster->one->y = nomScreenHeight;
         ringmaster->one->x = rand() % (nomScreenWidth - ringWidth) + 1;
         reorderRings(ringmaster);
@@ -526,6 +531,7 @@ void checkHit (Ringmaster *ringmaster){
     else {
         ringmaster->capsule->heat += 60;
         printf("MISS! Capsule heat: %d\n", ringmaster->capsule->heat);
+        ringmaster->rings--;
         ringmaster->one->y = nomScreenHeight;
         ringmaster->one->x = rand() % (nomScreenWidth - ringWidth) + 1;
         reorderRings(ringmaster);
@@ -536,49 +542,41 @@ void checkHit (Ringmaster *ringmaster){
 // Update function for ring tracking
 void updateRingmaster(Ringmaster *ringmaster){
     int playArea = nomScreenHeight - ringmaster->capsule->y - ringmaster->capsule->height;
+    int ringCheckpoint = nomScreenHeight - playArea - ringHeight;
+    // Randomize ring starting X vals
     if (ringmaster->randomized == false){
         randomizeRings(ringmaster);
     }
+    if (ringmaster->one->y < ringCheckpoint){
+        checkHit(ringmaster);
+    }
+    // Case switch for number of rings on display.
     switch (ringmaster->rings){
-        int ringCheckpoint = nomScreenHeight - playArea - ringHeight;
+        case 0:
+            ringmaster->rings = 1;
         case 1:
             if (ringmaster->one->y < (nomScreenHeight - ringmaster->seperation)){
                 ringmaster->rings = 2;
-            }
-            if (ringmaster->one->y < ringCheckpoint){
-                checkHit(ringmaster);
             }
             break;
         case 2:
             if (ringmaster->two->y < (nomScreenHeight - ringmaster->seperation)){
                 ringmaster->rings = 3;
             }
-            if (ringmaster->one->y < ringCheckpoint){
-                checkHit(ringmaster);
-            }
             break;
         case 3:
             if (ringmaster->three->y < ringCheckpoint){
                 ringmaster->rings = 4;
-            }
-            if (ringmaster->one->y < ringCheckpoint){
-                checkHit(ringmaster);
             }
             break;
         case 4:
             if (ringmaster->four->y < ringCheckpoint){
                 ringmaster->rings = 5;
             }
-            if (ringmaster->one->y < (nomScreenHeight - playArea - ringmaster->one->height)){
-                checkHit(ringmaster);
-            }
             break;
         case 5:
             if (ringmaster->five->y < (nomScreenHeight - ringmaster->seperation)){
                 ringmaster->rings = 5;
-            if (ringmaster->one->y < (nomScreenHeight - playArea - ringmaster->one->height)){
-                checkHit(ringmaster);
-                }
             }
             break;
     }
