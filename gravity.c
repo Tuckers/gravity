@@ -17,8 +17,6 @@ S2D_Window *window;
 
 ////////// GLOBAL VARIABLES //////////
 bool running = true;
-bool capsulesDefined = false;
-bool playersDefined = false;
 bool setupDefined = false;
 float friction = 0.98;
 float entropy = 0.8;
@@ -58,12 +56,57 @@ void defineColors(){
 }
 
 
+// SPRITES
+typedef struct Animation {
+    int frames;
+    int currentFrame;
+    int frameWidth;
+    int frameHeight;
+    int startingX;
+    int startingY;
+    int repeat;
+    int counter;
+    bool loop;
+    bool pingpong;
+    bool reverse;
+    S2D_Sprite *spr;
+} Animation;
+
+Animation shieldAnimation = {
+    .frames = 10,
+    .currentFrame = 0,
+    .frameWidth = 50,
+    .frameHeight = 50,
+    .startingX = 0,
+    .startingY = 0,
+    .repeat = 0,
+    .counter = 0,
+    .loop = true,
+    .pingpong = true,
+    .reverse = false
+};
+
+S2D_Sprite *shieldImg;
+
+void defineImages() {
+    shieldImg = S2D_CreateSprite("shield_sprite.png");
+    shieldImg->x = 200;
+    shieldImg->y = 300;
+    shieldAnimation.spr = shieldImg;
+}
+
+
+
+
+
+
 ////////// GAME STRUCTURES //////////
 
 // LEVELS
 typedef struct Level {
     char name[50];
     int duration;
+    int maxSpeed;
     int multiplier;
     int bonus;
     S2D_Color *startingColor;
@@ -74,6 +117,7 @@ typedef struct Level {
 Level exosphere = {
     .name = "exosphere",
     .duration = 15,
+    .maxSpeed = 10,
     .multiplier = 1,
     .bonus = 1000,
     .startingColor = &black,
@@ -84,6 +128,7 @@ Level exosphere = {
 Level thermosphere = {
     .name = "thermosphere",
     .duration = 15,
+    .maxSpeed = 10,
     .multiplier = 1,
     .bonus = 1000,
     .startingColor = &black,
@@ -94,6 +139,7 @@ Level thermosphere = {
 Level mesosphere = {
     .name = "thermosphere",
     .duration = 15,
+    .maxSpeed = 10,
     .multiplier = 1,
     .bonus = 1000,
     .startingColor = &black,
@@ -104,6 +150,7 @@ Level mesosphere = {
 Level stratosphere = {
     .name = "thermosphere",
     .duration = 15,
+    .maxSpeed = 10,
     .multiplier = 1,
     .bonus = 1000,
     .startingColor = &black,
@@ -114,6 +161,7 @@ Level stratosphere = {
 Level troposphere = {
     .name = "thermosphere",
     .duration = 15,
+    .maxSpeed = 10,
     .multiplier = 1,
     .bonus = 1000,
     .startingColor = &black,
@@ -146,13 +194,14 @@ Player player2 = {
 
 // CAPSULES
 typedef struct Capsule {
-    int x;
-    int y;
     int width;
     int height;
+    float x;
+    float y;
     float velX;
     float velY;
-    float preVelY;
+    float driftY;
+    float preDriftY;
     int maxX;
     int maxY;
     int heat;
@@ -162,13 +211,14 @@ typedef struct Capsule {
 } Capsule;
 
 Capsule capsule1 = {
-    .x = 0,
-    .y = 0,
     .width = capsuleWidth,
     .height = capsuleHeight,
+    .x = 0,
+    .y = 0,
     .velX = 0,
-    .velY = 1,
-    .preVelY = 0,
+    .velY = 0,
+    .driftY = 0.5,
+    .preDriftY = 0,
     .maxX = 20,
     .maxY = 10,
     .heat = 0,
@@ -178,13 +228,14 @@ Capsule capsule1 = {
 };
 
 Capsule capsule2 = {
-    .x = nomScreenWidth,
-    .y = 0,
     .width = capsuleWidth,
     .height = capsuleHeight,
+    .x = nomScreenWidth,
+    .y = 0,
     .velX = 0,
-    .velY = 1,
-    .preVelY = 0,
+    .velY = 0,
+    .driftY = 0.5,
+    .preDriftY = 0,
     .maxX = 20,
     .maxY = 10,
     .heat = 0,
@@ -203,6 +254,7 @@ typedef struct Ring {
 } Ring;
 
 // Player 1
+Ring capOneRings[5];
 Ring ring1 = {
     .x = 0,
     .y = nomScreenHeight,
@@ -238,7 +290,9 @@ Ring ring5 = {
     .height = ringHeight,
     .color = &lightGreen
 };
+
 // Player 2
+Ring capTwoRings[5];
 Ring ring6 = {
     .x = 0,
     .y = nomScreenHeight,
@@ -278,6 +332,7 @@ Ring ring10 = {
 // RINGMASTER
 typedef struct Ringmaster {
     int rings;
+    Ring *allRings;
     Ring *one;
     Ring *two;
     Ring *three;
@@ -295,6 +350,7 @@ typedef struct Ringmaster {
 
 Ringmaster ringmaster1 = {
     .rings = 1,
+    .allRings = &capOneRings[0],
     .one = &ring1,
     .two = &ring2,
     .three = &ring3,
@@ -312,6 +368,7 @@ Ringmaster ringmaster1 = {
 
 Ringmaster ringmaster2 = {
     .rings = 1,
+    .allRings = &capTwoRings[0],
     .one = &ring6,
     .two = &ring7,
     .three = &ring8,
@@ -333,27 +390,28 @@ typedef struct Game {
     bool gameOver;
     int level;
     int players;
-    Level *levelOne;
-    Level *levelTwo;
-    Level *levelThree;
-    Level *levelFour;
-    Level *levelFive;
+    Level *levels;
     Player *player1;
     Player *player2;
     Capsule *capsule1;
     Capsule *capsule2;
 } Game;
 
+Level gameLevels[5];
+void defineGameLevels() {
+    gameLevels[0] = exosphere;
+    gameLevels[1] = thermosphere;
+    gameLevels[2] = mesosphere;
+    gameLevels[3] = stratosphere;
+    gameLevels[4] = troposphere;
+}
+
 Game game = {
     .gameMode = 3,
     .gameOver = false,
-    .level = 1,
+    .level = 0,
     .players = 2,
-    .levelOne = &exosphere,
-    .levelTwo = &thermosphere,
-    .levelThree = &mesosphere,
-    .levelFour = &stratosphere,
-    .levelFive = &troposphere
+    .levels = &gameLevels[0],
 };
 
 ////////// DRAWING FUNCTIONS //////////
@@ -381,36 +439,86 @@ void drawRectangle(int x, int y, int width, int height, S2D_Color *color) {
     );
 }
 
+S2D_Color* mixColor(S2D_Color *colorOne, S2D_Color *colorTwo, int balance){
+    S2D_Color *color;
+    color->r = (colorOne->r / 100 * balance) + (colorTwo->r / 100 * (100-balance));
+    color->g = (colorOne->r / 100 * balance) + (colorTwo->r / 100 * (100-balance));
+    color->b = (colorOne->r / 100 * balance) + (colorTwo->r / 100 * (100-balance));
+    color->a = (colorOne->r / 100 * balance) + (colorTwo->r / 100 * (100-balance));
+    return color;
+}
+
+void drawBkg(Capsule *cap1, Capsule *cap2) {
+    Level *currentLevel = &game.levels[game.level];
+    //mixColor(currentLevel->startingColor, currentLevel->endingColor, 50);
+    int x = 0;
+    int y = 0;
+    int width = nomScreenWidth;
+    int height = nomScreenHeight;
+
+    float color1 = cap1->heat / 100;
+    float color2 = cap2->heat / 100;
+
+    // Change orientation if enabled
+    if (orientation == 1){
+        int tempY = y;
+        y = x;
+        x = tempY;
+        int tempWidth = width;
+        width = height;
+        height = tempWidth;
+    }
+    S2D_DrawQuad(
+        // Upper left
+        x, y, color1, 0, 0, 1,
+        // Upper right
+        (x + width), y, color2, 0, 0, 1,
+        // Lower right
+        (x + width), (y + height), color2, 0, 0, 1,
+        // Lower left
+        x, (y + height), color1, 0, 0, 1
+    );
+}
+
 void updateCapsule(Capsule *cap){
     // Check for player input
     //printf("Player 1 left = %s \n", player1->left ? "true" : "false");
     //printf("Player 1 right = %s \n", player1->right ? "true" : "false");
+    Level currentLevel = game.levels[game.level];
 
     // Braking
     if (cap->player->left == true && cap->player->right == true){
         if (cap->braking == false){
-            cap->preVelY = cap->velY;
+            cap->preDriftY = cap->driftY;
             cap->braking = true;
         }
         // If braking, slow capsule and add heat
-        cap->velY = cap->velY - 1;
+        cap->driftY = cap->driftY - 1;
         cap->heat = cap->heat + 1;
-        if (cap->heat > 300){
-            cap->heat = 300;
+        cap->velY = cap->velY - 0.1;
+        if (cap->heat > 100){
+            cap->heat = 100;
         }
-        if (cap->velY < -cap->maxY){
-            cap->velY = -cap->maxY;
+        if (cap->driftY < -cap->maxY){
+            cap->driftY = -cap->maxY;
+        }
+        if (cap->velY < 0){
+            cap->velY = 0;
         }
     }
     else {
         // If not braking, resume previous speed and reduce heat
         cap->braking = false;
         cap->heat--;
+        cap->velY = cap->velY + 0.01;
         if (cap->heat < 0){
             cap->heat = 0;
         }
-        if (cap->velY < cap->preVelY){
-            cap->velY = cap->velY + 0.5;
+        if (cap->driftY < cap->preDriftY){
+            cap->driftY = cap->driftY + 0.5;
+        }
+        if (cap->velY > currentLevel.maxSpeed){
+            cap->velY = 10;
         }
     }
     // Invert player movement if vertical orientation
@@ -444,21 +552,11 @@ void updateCapsule(Capsule *cap){
             }
         }
     }
-
-
-}
-
-void drawCapsule(Capsule *cap){
     // Add friction quotiant to slow movement
     cap->velX *= friction;
     // Temp variables to hold velocity + current location
-    int x = cap->x + cap->velX;
-    int y = cap->y + cap->velY;
-    // Color change for heat buildup.
-    float r = (1.0 - cap->color->r / 300) * cap->heat;
-    float g = (0.0 - cap->color->g / 300) * cap->heat;
-    float b = (0.0 - cap->color->b / 300) * cap->heat;
-    S2D_Color colorTemp = {.r = r + cap->color->r, .g = g + cap->color->g, .b = b + cap->color->b, .a = cap->color->a};
+    float x = cap->x + cap->velX;
+    float y = cap->y + cap->driftY;
     // If new x is outside field of play, bring it in, kill excess velocity (improves responsiveness)
     if ((x + cap->width) > nomScreenWidth){
         x = nomScreenWidth - cap->width;
@@ -482,8 +580,16 @@ void drawCapsule(Capsule *cap){
     if (cap->velX < 0.1 && cap->velX > -0.1){
         cap->velX = 0;
     }
-    // Draw the capsule at the updated location.
-    drawRectangle(x, y, cap->width, cap->height, &colorTemp);
+}
+
+void drawCapsule(Capsule *cap){
+    // Color change for heat buildup.
+    float r = (1.0 - cap->color->r / 100) * cap->heat;
+    float g = (0.0 - cap->color->g / 100) * cap->heat;
+    float b = (0.0 - cap->color->b / 100) * cap->heat;
+    S2D_Color colorTemp = {.r = r + cap->color->r, .g = g + cap->color->g, .b = b + cap->color->b, .a = cap->color->a};
+    // Draw the capsule at the updated location
+    drawRectangle(cap->x, cap->y, cap->width, cap->height, &colorTemp);
 }
 
 void drawRing(Ring *ring){
@@ -541,6 +647,7 @@ void checkHit (Ringmaster *ringmaster){
 
 // Update function for ring tracking
 void updateRingmaster(Ringmaster *ringmaster){
+    ringmaster->velY = ringmaster->capsule->velY;
     int playArea = nomScreenHeight - ringmaster->capsule->y - ringmaster->capsule->height;
     int ringCheckpoint = nomScreenHeight - playArea - ringHeight;
     // Randomize ring starting X vals
@@ -580,6 +687,48 @@ void updateRingmaster(Ringmaster *ringmaster){
             }
             break;
     }
+}
+
+void drawAnimation (Animation *ani){
+    int x;
+    if (ani->loop == true){
+        if (ani->currentFrame > ani->frames){
+            if (ani->pingpong == true){
+                ani->currentFrame = ani->frames - 2;
+            } else {
+                ani->currentFrame = 0;
+            }
+            ani->counter++;
+        }
+        if (ani->currentFrame < 0){
+            if (ani->pingpong == true){
+                ani->currentFrame = 1;
+            } else {
+                ani->currentFrame = ani->frames - 1;
+            }
+            ani->counter++;
+        }
+    }
+    if (ani->frames >= ani->currentFrame && ani->currentFrame >= 0){
+        x = ani->startingX + ani->frameWidth * ani->currentFrame;
+        S2D_ClipSprite(ani->spr, x, ani->startingY, ani->frameWidth, ani->frameHeight);
+        S2D_DrawSprite(ani->spr);
+    }
+    if (ani->pingpong == false && ani->reverse == false){
+        ani->currentFrame++;
+    }
+    else if (ani->reverse == true){
+        ani->currentFrame--;
+    }
+    else if (ani->pingpong == true){
+            if ((ani->counter % 2) == 1){ //If playing backward
+                ani->currentFrame--;
+            }
+            else {
+                ani->currentFrame++; //If playing forward
+            }
+    }
+
 }
 
 void drawRingmaster (Ringmaster *ringmaster){
@@ -718,20 +867,26 @@ void update() {
 
 // DRAW UPDATED ART
 void render() {
+    //drawBkg(&capsule1, &capsule2);
     drawCapsule(&capsule1);
     drawCapsule(&capsule2);
     drawRingmaster(&ringmaster1);
     drawRingmaster(&ringmaster2);
-
+    drawAnimation(&shieldAnimation);
 }
 
 int main() {
     // SETUP
     defineColors();
+    if (setupDefined == false) {
+        defineImages();
+        defineGameLevels();
+        setupDefined = true;
+    }
     // Enable verbose output
     S2D_Diagnostics(true);
     // Create game window, fullscreen.
-    window = S2D_CreateWindow("Gravity", screenWidth, screenHeight, update, render, S2D_FULLSCREEN);
+    window = S2D_CreateWindow("Gravity", screenWidth, screenHeight, update, render, 0);
     // Temporary method for disabling cursor.
     SDL_ShowCursor(SDL_DISABLE);
     // Enable keyboard input
