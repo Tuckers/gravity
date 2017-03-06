@@ -3,8 +3,8 @@
 // Define to enable 90degree rotation.
 //#define ROTATE
 
-#define capsuleHeight 50
-#define capsuleWidth 50
+#define capsuleHeight 100
+#define capsuleWidth 100
 
 #define ringHeight 10
 #define ringWidth 150
@@ -86,6 +86,65 @@ Animation shieldAnimation = {
     .reverse = false
 };
 
+Animation capAnimation = {
+    .frames = 30,
+    .currentFrame = 0,
+    .frameWidth = 100,
+    .frameHeight = 100,
+    .startingX = 0,
+    .startingY = 0,
+    .repeat = 0,
+    .counter = 0,
+    .loop = true,
+    .pingpong = true,
+    .reverse = false
+};
+
+typedef struct Movement {
+    int frames;
+    int currentFrame;
+    int frameWidth;
+    int frameHeight;
+    int startingX;
+    int startingY;
+} Movement;
+
+Movement capDown= {
+    .frames = 30,
+    .currentFrame = 0,
+    .frameWidth = 100,
+    .frameHeight = 100,
+    .startingX = 0,
+    .startingY = 300
+};
+
+Movement capLeft = {
+    .frames = 30,
+    .currentFrame = 0,
+    .frameWidth = 100,
+    .frameHeight = 100,
+    .startingX = 0,
+    .startingY = 0
+};
+
+Movement capRight = {
+    .frames = 30,
+    .currentFrame = 0,
+    .frameWidth = 100,
+    .frameHeight = 100,
+    .startingX = 0,
+    .startingY = 200
+};
+
+Movement capBrake = {
+    .frames = 30,
+    .currentFrame = 0,
+    .frameWidth = 100,
+    .frameHeight = 100,
+    .startingX = 0,
+    .startingY = 100
+};
+
 S2D_Sprite *shieldImg;
 
 void defineImages() {
@@ -95,17 +154,13 @@ void defineImages() {
     shieldAnimation.spr = shieldImg;
 }
 
-
-
-
-
-
 ////////// GAME STRUCTURES //////////
 
 // LEVELS
 typedef struct Level {
     char name[50];
     int duration;
+    int count;
     int maxSpeed;
     int multiplier;
     int bonus;
@@ -117,6 +172,7 @@ typedef struct Level {
 Level exosphere = {
     .name = "exosphere",
     .duration = 15,
+    .count = 0,
     .maxSpeed = 10,
     .multiplier = 1,
     .bonus = 1000,
@@ -128,6 +184,7 @@ Level exosphere = {
 Level thermosphere = {
     .name = "thermosphere",
     .duration = 15,
+    .count = 0,
     .maxSpeed = 10,
     .multiplier = 1,
     .bonus = 1000,
@@ -139,6 +196,7 @@ Level thermosphere = {
 Level mesosphere = {
     .name = "thermosphere",
     .duration = 15,
+    .count = 0,
     .maxSpeed = 10,
     .multiplier = 1,
     .bonus = 1000,
@@ -150,6 +208,7 @@ Level mesosphere = {
 Level stratosphere = {
     .name = "thermosphere",
     .duration = 15,
+    .count = 0,
     .maxSpeed = 10,
     .multiplier = 1,
     .bonus = 1000,
@@ -161,6 +220,7 @@ Level stratosphere = {
 Level troposphere = {
     .name = "thermosphere",
     .duration = 15,
+    .count = 0,
     .maxSpeed = 10,
     .multiplier = 1,
     .bonus = 1000,
@@ -208,6 +268,12 @@ typedef struct Capsule {
     bool braking;
     S2D_Color *color;
     Player *player;
+    S2D_Sprite *spr;
+    Movement *left;
+    Movement *right;
+    Movement *down;
+    Movement *brake;
+    Animation *animation;
 } Capsule;
 
 Capsule capsule1 = {
@@ -224,7 +290,11 @@ Capsule capsule1 = {
     .heat = 0,
     .braking = false,
     .player = &player1,
-    .color = &green
+    .color = &green,
+    .left = &capLeft,
+    .right = &capRight,
+    .down = &capDown,
+    .brake = &capBrake
 };
 
 Capsule capsule2 = {
@@ -241,8 +311,22 @@ Capsule capsule2 = {
     .heat = 0,
     .braking = false,
     .player = &player2,
-    .color = &blue
+    .color = &blue,
+    .left = &capLeft,
+    .right = &capRight,
+    .down = &capDown,
+    .brake = &capBrake
 };
+
+void defineCapsuleSpr(){
+    #ifdef ROTATE
+        capsule1.spr = S2D_CreateSprite("cap_spr_green_v.png");
+        capsule2.spr = S2D_CreateSprite("cap_spr_blue_v.png");
+    #else
+        capsule1.spr = S2D_CreateSprite("cap_spr_green.png");
+        capsule2.spr = S2D_CreateSprite("cap_spr_blue.png");
+    #endif
+}
 
 // RINGS
 typedef struct Ring {
@@ -582,14 +666,93 @@ void updateCapsule(Capsule *cap){
     }
 }
 
+void drawAnimation (Animation *ani){
+    int x;
+    if (ani->loop == true){
+        if (ani->currentFrame > ani->frames){
+            if (ani->pingpong == true){
+                ani->currentFrame = ani->frames - 2;
+            } else {
+                ani->currentFrame = 0;
+            }
+            ani->counter++;
+        }
+        if (ani->currentFrame < 0){
+            if (ani->pingpong == true){
+                ani->currentFrame = 1;
+            } else {
+                ani->currentFrame = ani->frames - 1;
+            }
+            ani->counter++;
+        }
+    }
+    if (ani->frames >= ani->currentFrame && ani->currentFrame >= 0){
+        x = ani->startingX + ani->frameWidth * ani->currentFrame;
+        S2D_ClipSprite(ani->spr, x, ani->startingY, ani->frameWidth, ani->frameHeight);
+        S2D_DrawSprite(ani->spr);
+    }
+    if (ani->pingpong == false && ani->reverse == false){
+        ani->currentFrame++;
+    }
+    else if (ani->reverse == true){
+        ani->currentFrame--;
+    }
+    else if (ani->pingpong == true){
+            if ((ani->counter % 2) == 1){ //If playing backward
+                ani->currentFrame--;
+            }
+            else {
+                ani->currentFrame++; //If playing forward
+            }
+    }
+
+}
+
+void drawSprite(S2D_Sprite *spr, Movement *mov, int frame){
+    #ifdef ROTATE
+        int y = (mov->frameWidth * mov->frames) - (mov->frameWidth * frame);
+        S2D_ClipSprite(spr, mov->startingY, y, mov->frameHeight, mov->frameWidth);
+    #else
+        int x = mov->frameWidth * frame;
+        S2D_ClipSprite(spr, x, mov->startingY, mov->frameWidth, mov->frameHeight);
+    #endif
+    S2D_DrawSprite(spr);
+}
+
 void drawCapsule(Capsule *cap){
     // Color change for heat buildup.
-    float r = (1.0 - cap->color->r / 100) * cap->heat;
-    float g = (0.0 - cap->color->g / 100) * cap->heat;
-    float b = (0.0 - cap->color->b / 100) * cap->heat;
-    S2D_Color colorTemp = {.r = r + cap->color->r, .g = g + cap->color->g, .b = b + cap->color->b, .a = cap->color->a};
-    // Draw the capsule at the updated location
-    drawRectangle(cap->x, cap->y, cap->width, cap->height, &colorTemp);
+    // float r = (1.0 - cap->color->r / 100) * cap->heat;
+    // float g = (0.0 - cap->color->g / 100) * cap->heat;
+    // float b = (0.0 - cap->color->b / 100) * cap->heat;
+    // S2D_Color colorTemp = {.r = r + cap->color->r, .g = g + cap->color->g, .b = b + cap->color->b, .a = cap->color->a};
+    // Draw the capsule at the updated location rotation function.
+    #ifdef ROTATE
+        cap->spr->x = cap->y;
+        cap->spr->y = cap->x;
+    #else
+        cap->spr->x = cap->x;
+        cap->spr->y = cap->y;
+    #endif
+    // Draw left movement sprite
+    if (cap->heat > 1){
+        int frame = (cap->heat * cap->brake->frames / 100);
+        drawSprite(cap->spr, cap->brake, frame);
+    }
+    else if (cap->velX < -0.5){
+        int frame = (-cap->velX * cap->left->frames / cap->maxX);
+        drawSprite(cap->spr, cap->left, frame);
+    }
+    else if (cap->velX > 0.5){
+        int frame = (cap->velX * cap->right->frames / cap->maxX);
+        drawSprite(cap->spr, cap->right, frame);
+    }
+    else {
+        if (cap->down->currentFrame > cap->down->frames){
+            cap->down->currentFrame = 0;
+        }
+        drawSprite(cap->spr, cap->down, cap->down->currentFrame);
+        cap->down->currentFrame++;
+    }
 }
 
 void drawRing(Ring *ring){
@@ -687,48 +850,6 @@ void updateRingmaster(Ringmaster *ringmaster){
             }
             break;
     }
-}
-
-void drawAnimation (Animation *ani){
-    int x;
-    if (ani->loop == true){
-        if (ani->currentFrame > ani->frames){
-            if (ani->pingpong == true){
-                ani->currentFrame = ani->frames - 2;
-            } else {
-                ani->currentFrame = 0;
-            }
-            ani->counter++;
-        }
-        if (ani->currentFrame < 0){
-            if (ani->pingpong == true){
-                ani->currentFrame = 1;
-            } else {
-                ani->currentFrame = ani->frames - 1;
-            }
-            ani->counter++;
-        }
-    }
-    if (ani->frames >= ani->currentFrame && ani->currentFrame >= 0){
-        x = ani->startingX + ani->frameWidth * ani->currentFrame;
-        S2D_ClipSprite(ani->spr, x, ani->startingY, ani->frameWidth, ani->frameHeight);
-        S2D_DrawSprite(ani->spr);
-    }
-    if (ani->pingpong == false && ani->reverse == false){
-        ani->currentFrame++;
-    }
-    else if (ani->reverse == true){
-        ani->currentFrame--;
-    }
-    else if (ani->pingpong == true){
-            if ((ani->counter % 2) == 1){ //If playing backward
-                ani->currentFrame--;
-            }
-            else {
-                ani->currentFrame++; //If playing forward
-            }
-    }
-
 }
 
 void drawRingmaster (Ringmaster *ringmaster){
@@ -872,7 +993,7 @@ void render() {
     drawCapsule(&capsule2);
     drawRingmaster(&ringmaster1);
     drawRingmaster(&ringmaster2);
-    drawAnimation(&shieldAnimation);
+    //drawAnimation(&shieldAnimation);
 }
 
 int main() {
@@ -880,6 +1001,7 @@ int main() {
     defineColors();
     if (setupDefined == false) {
         defineImages();
+        defineCapsuleSpr();
         defineGameLevels();
         setupDefined = true;
     }
