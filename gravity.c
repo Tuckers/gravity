@@ -1,7 +1,8 @@
 #include <simple2d.h>
+#include "functions.h"
 
 // Define to enable 90degree rotation.
-//#define ROTATE
+#define ROTATE
 
 #define capsuleHeight 100
 #define capsuleWidth 100
@@ -112,8 +113,8 @@ typedef struct Movement {
 Movement capDown= {
     .frames = 30,
     .currentFrame = 0,
-    .frameWidth = 100,
-    .frameHeight = 100,
+    .frameWidth = 50,
+    .frameHeight = 50,
     .startingX = 0,
     .startingY = 300
 };
@@ -136,6 +137,7 @@ Movement capRight = {
     .startingY = 200
 };
 
+
 Movement capBrake = {
     .frames = 30,
     .currentFrame = 0,
@@ -145,14 +147,75 @@ Movement capBrake = {
     .startingY = 100
 };
 
+typedef struct Sprite {
+    S2D_Sprite *spr;
+    int frames;
+    double (*sheet)[4];
+} Sprite;
+
+double nf80Sheet[10][4] = {
+    {	0	,	0	,	65	,	65	},
+    {	65	,	0	,   65	,	65	},
+    {	130	,	0	,	65	,	65	},
+    {	195	,	0	,	65	,	65	},
+    {	260	,   0	,	65	,	65	},
+    {	325	,	0	,	65	,	65	},
+    {	390	,	0	,	65	,	65	},
+    {   455	,	0	,	65	,	65	},
+    {	520	,	0	,	65	,	65	},
+    {	585	,	0	,	65	,	65  }
+};
+
+Sprite numberFont80;
+
 S2D_Sprite *shieldImg;
+S2D_Sprite *numberFont80img;
+
+int numPlaces(int n){
+    if (n < 10) return 1;
+    if (n < 100) return 2;
+    if (n < 1000) return 3;
+    if (n < 10000) return 4;
+    if (n < 100000) return 5;
+    if (n < 1000000) return 6;
+    if (n < 10000000) return 7;
+    if (n < 100000000) return 8;
+    if (n < 1000000000) return 9;
+    return 10;
+}
+
+void drawNumber(Sprite *sprite, int n, int x, int y){
+    int digits = numPlaces(n);
+    for (int i = digits; i>0; i--){
+        // draw digits in order from right to left
+        int currentX = x + ((i - 1) * sprite->sheet[0][3]);
+        int digit = n % 10;
+        n = n / 10;
+        S2D_ClipSprite(sprite->spr, sprite->sheet[digit][0], sprite->sheet[digit][1], sprite->sheet[digit][2], sprite->sheet[digit][3]);
+        sprite->spr->x = currentX;
+        sprite->spr->y = y;
+        sprite->spr->width = sprite->sheet[0][2];
+        sprite->spr->height = sprite->sheet[0][3];
+        S2D_DrawSprite(sprite->spr);
+    }
+}
+
 
 void defineImages() {
     shieldImg = S2D_CreateSprite("shield_sprite.png");
     shieldImg->x = 200;
     shieldImg->y = 300;
     shieldAnimation.spr = shieldImg;
-}
+
+    numberFont80img = S2D_CreateSprite("number_font_80px.png");
+    numberFont80img->x = 65;
+    numberFont80img->y = 65;
+    numberFont80.spr = numberFont80img;
+    numberFont80.frames = 10;
+    numberFont80.sheet = &nf80Sheet[0];
+
+
+};
 
 ////////// GAME STRUCTURES //////////
 
@@ -291,8 +354,13 @@ Capsule capsule1 = {
     .braking = false,
     .player = &player1,
     .color = &green,
+#ifdef ROTATE
+    .left = &capRight,
+    .right = &capLeft,
+#else
     .left = &capLeft,
     .right = &capRight,
+#endif
     .down = &capDown,
     .brake = &capBrake
 };
@@ -312,8 +380,13 @@ Capsule capsule2 = {
     .braking = false,
     .player = &player2,
     .color = &blue,
+#ifdef ROTATE
+    .left = &capRight,
+    .right = &capLeft,
+#else
     .left = &capLeft,
     .right = &capRight,
+#endif
     .down = &capDown,
     .brake = &capBrake
 };
@@ -468,7 +541,7 @@ Ringmaster ringmaster2 = {
     .capsule = &capsule2
 };
 
-// GAME
+// GAME STRUCTURES
 typedef struct Game {
     int gameMode;
     bool gameOver;
@@ -491,7 +564,7 @@ void defineGameLevels() {
 }
 
 Game game = {
-    .gameMode = 3,
+    .gameMode = 5,
     .gameOver = false,
     .level = 0,
     .players = 2,
@@ -916,9 +989,7 @@ void drawRingmaster (Ringmaster *ringmaster){
 
 }
 
-//const char *font = "SanFranciscoText-Regular.otf";
-//int font_size = 20;
-
+/////////// KEYBOARD INPUT //////////
 void on_key(S2D_Event e, const char *key) {
   switch (e) {
     case S2D_KEYDOWN:
@@ -968,14 +1039,28 @@ void on_key(S2D_Event e, const char *key) {
   }
 }
 
+void updateInput(Player *player){
+    if (player->left == true && player->right == false){
+
+    }
+}
+
+/////////// GAME //////////
+
 // UPDATE ALL PLAY PARAMETERS
 void update() {
     switch (game.gameMode){
         case 1: //Looping display
             break;
-        case 2: //Player input, game selection
+        case 2: //Player # selection
+            updateInput(&player1);
+            updateInput(&player2);
             break;
-        case 3: //Gameplay
+        case 3: //Ship selection
+            break;
+        case 4: //Introduction
+            break;
+        case 5: //Gameplay
             updateCapsule(&capsule1);
             updateRingmaster(&ringmaster1);
             if (game.players == 2){
@@ -988,12 +1073,28 @@ void update() {
 
 // DRAW UPDATED ART
 void render() {
-    //drawBkg(&capsule1, &capsule2);
-    drawCapsule(&capsule1);
-    drawCapsule(&capsule2);
-    drawRingmaster(&ringmaster1);
-    drawRingmaster(&ringmaster2);
-    //drawAnimation(&shieldAnimation);
+    switch (game.gameMode){
+        case 1: //Looping display
+            break;
+        case 2: //Player # selection
+            break;
+        case 3: //Ship selection
+            break;
+        case 4: //Introduction
+            break;
+        case 5: //Gameplay
+            //drawBkg(&capsule1, &capsule2);
+            drawNumber(&numberFont80, player1.score, 100, 100);
+            drawCapsule(&capsule1);
+            drawRingmaster(&ringmaster1);
+            if (game.players == 2){
+                drawCapsule(&capsule2);
+                drawRingmaster(&ringmaster2);
+            }
+            //drawAnimation(&shieldAnimation);
+            break;
+
+    }
 }
 
 int main() {
