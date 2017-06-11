@@ -1,17 +1,9 @@
 #include <simple2d.h>
-#include "functions.h"
+#include <sys/time.h>
+#include "sprites.h"
+#include "gameDef.h"
 
-// Define to enable 90degree rotation.
-#define ROTATE
 
-#define capsuleHeight 100
-#define capsuleWidth 100
-
-#define ringHeight 10
-#define ringWidth 150
-
-#define nomScreenHeight 1920
-#define nomScreenWidth 1080
 
 S2D_Window *window;
 
@@ -58,49 +50,6 @@ void defineColors(){
 
 
 // SPRITES
-typedef struct Animation {
-    int frames;
-    int currentFrame;
-    int frameWidth;
-    int frameHeight;
-    int startingX;
-    int startingY;
-    int repeat;
-    int counter;
-    bool loop;
-    bool pingpong;
-    bool reverse;
-    S2D_Sprite *spr;
-} Animation;
-
-Animation shieldAnimation = {
-    .frames = 10,
-    .currentFrame = 0,
-    .frameWidth = 50,
-    .frameHeight = 50,
-    .startingX = 0,
-    .startingY = 0,
-    .repeat = 0,
-    .counter = 0,
-    .loop = true,
-    .pingpong = true,
-    .reverse = false
-};
-
-Animation capAnimation = {
-    .frames = 30,
-    .currentFrame = 0,
-    .frameWidth = 100,
-    .frameHeight = 100,
-    .startingX = 0,
-    .startingY = 0,
-    .repeat = 0,
-    .counter = 0,
-    .loop = true,
-    .pingpong = true,
-    .reverse = false
-};
-
 typedef struct Movement {
     int frames;
     int currentFrame;
@@ -137,7 +86,6 @@ Movement capRight = {
     .startingY = 200
 };
 
-
 Movement capBrake = {
     .frames = 30,
     .currentFrame = 0,
@@ -145,76 +93,6 @@ Movement capBrake = {
     .frameHeight = 100,
     .startingX = 0,
     .startingY = 100
-};
-
-typedef struct Sprite {
-    S2D_Sprite *spr;
-    int frames;
-    double (*sheet)[4];
-} Sprite;
-
-double nf80Sheet[10][4] = {
-    {	0	,	0	,	65	,	65	},
-    {	65	,	0	,   65	,	65	},
-    {	130	,	0	,	65	,	65	},
-    {	195	,	0	,	65	,	65	},
-    {	260	,   0	,	65	,	65	},
-    {	325	,	0	,	65	,	65	},
-    {	390	,	0	,	65	,	65	},
-    {   455	,	0	,	65	,	65	},
-    {	520	,	0	,	65	,	65	},
-    {	585	,	0	,	65	,	65  }
-};
-
-Sprite numberFont80;
-
-S2D_Sprite *shieldImg;
-S2D_Sprite *numberFont80img;
-
-int numPlaces(int n){
-    if (n < 10) return 1;
-    if (n < 100) return 2;
-    if (n < 1000) return 3;
-    if (n < 10000) return 4;
-    if (n < 100000) return 5;
-    if (n < 1000000) return 6;
-    if (n < 10000000) return 7;
-    if (n < 100000000) return 8;
-    if (n < 1000000000) return 9;
-    return 10;
-}
-
-void drawNumber(Sprite *sprite, int n, int x, int y){
-    int digits = numPlaces(n);
-    for (int i = digits; i>0; i--){
-        // draw digits in order from right to left
-        int currentX = x + ((i - 1) * sprite->sheet[0][3]);
-        int digit = n % 10;
-        n = n / 10;
-        S2D_ClipSprite(sprite->spr, sprite->sheet[digit][0], sprite->sheet[digit][1], sprite->sheet[digit][2], sprite->sheet[digit][3]);
-        sprite->spr->x = currentX;
-        sprite->spr->y = y;
-        sprite->spr->width = sprite->sheet[0][2];
-        sprite->spr->height = sprite->sheet[0][3];
-        S2D_DrawSprite(sprite->spr);
-    }
-}
-
-
-void defineImages() {
-    shieldImg = S2D_CreateSprite("shield_sprite.png");
-    shieldImg->x = 200;
-    shieldImg->y = 300;
-    shieldAnimation.spr = shieldImg;
-
-    numberFont80img = S2D_CreateSprite("number_font_80px.png");
-    numberFont80img->x = 65;
-    numberFont80img->y = 65;
-    numberFont80.spr = numberFont80img;
-    numberFont80.frames = 10;
-    numberFont80.sheet = &nf80Sheet[0];
-
-
 };
 
 ////////// GAME STRUCTURES //////////
@@ -336,7 +214,6 @@ typedef struct Capsule {
     Movement *right;
     Movement *down;
     Movement *brake;
-    Animation *animation;
 } Capsule;
 
 Capsule capsule1 = {
@@ -564,7 +441,7 @@ void defineGameLevels() {
 }
 
 Game game = {
-    .gameMode = 5,
+    .gameMode = 2,
     .gameOver = false,
     .level = 0,
     .players = 2,
@@ -739,48 +616,6 @@ void updateCapsule(Capsule *cap){
     }
 }
 
-void drawAnimation (Animation *ani){
-    int x;
-    if (ani->loop == true){
-        if (ani->currentFrame > ani->frames){
-            if (ani->pingpong == true){
-                ani->currentFrame = ani->frames - 2;
-            } else {
-                ani->currentFrame = 0;
-            }
-            ani->counter++;
-        }
-        if (ani->currentFrame < 0){
-            if (ani->pingpong == true){
-                ani->currentFrame = 1;
-            } else {
-                ani->currentFrame = ani->frames - 1;
-            }
-            ani->counter++;
-        }
-    }
-    if (ani->frames >= ani->currentFrame && ani->currentFrame >= 0){
-        x = ani->startingX + ani->frameWidth * ani->currentFrame;
-        S2D_ClipSprite(ani->spr, x, ani->startingY, ani->frameWidth, ani->frameHeight);
-        S2D_DrawSprite(ani->spr);
-    }
-    if (ani->pingpong == false && ani->reverse == false){
-        ani->currentFrame++;
-    }
-    else if (ani->reverse == true){
-        ani->currentFrame--;
-    }
-    else if (ani->pingpong == true){
-            if ((ani->counter % 2) == 1){ //If playing backward
-                ani->currentFrame--;
-            }
-            else {
-                ani->currentFrame++; //If playing forward
-            }
-    }
-
-}
-
 void drawSprite(S2D_Sprite *spr, Movement *mov, int frame){
     #ifdef ROTATE
         int y = (mov->frameWidth * mov->frames) - (mov->frameWidth * frame);
@@ -893,6 +728,8 @@ void updateRingmaster(Ringmaster *ringmaster){
     if (ringmaster->one->y < ringCheckpoint){
         checkHit(ringmaster);
     }
+
+
     // Case switch for number of rings on display.
     switch (ringmaster->rings){
         case 0:
@@ -1039,22 +876,93 @@ void on_key(S2D_Event e, const char *key) {
   }
 }
 
-void updateInput(Player *player){
-    if (player->left == true && player->right == false){
+typedef struct Selector {
+    bool arrived;
+    int items;
+    int currentSelection;
+    bool wrap;
+    int timeLimit;
+    int timeRemaining;
+    int count;
+    bool selected;
+} Selector;
 
+
+
+////////// PLAYER SELECTION //////////
+Selector playerSelect = {
+    .arrived = false,
+    .items = 2,
+    .currentSelection = 1,
+    .wrap = false,
+    .timeLimit = 10,
+    .timeRemaining = 10,
+    .count = 0,
+    .selected = false
+};
+
+void updatePlayerSelect (Player *player, Selector *selector){
+    if (selector->selected == true){
+        game.gameMode = 5;
+    }
+    else {
+        selector->count++;
+        if ((selector->count / 60) > selector->timeLimit - selector->timeRemaining){
+            selector->timeRemaining--;
+            if (selector->timeRemaining < 0){
+                selector->selected = true;
+            }
+        }
+        if (selector->currentSelection == 1){ // 1 player selected
+            game.players = 1;
+            if (player->left == false && player->right == true){
+                selector->currentSelection = 2;
+            }
+        }
+        else {
+            game.players = 2; // 2 player selected
+            if (player->left == true && player->right == false){
+                selector->currentSelection = 1;
+            }
+        }
+        if (player->left == true && player->right == true){
+            selector->selected = true;
+        }
     }
 }
 
-/////////// GAME //////////
+void drawPlayerSelect(Selector *selector){
+    if (selector->timeRemaining < 10){
+        drawNumber(&numberFont80, 0, 482, 1675);
+        drawNumber(&numberFont80, selector->timeRemaining, 533, 1675);
+    }
+    else {
+        drawNumber(&numberFont80, 1, 482, 1675);
+        drawNumber(&numberFont80, 0, 533, 1675);
+    }
+    if (selector->currentSelection == 1){
+        onePAni.frame = 0;
+        twoPAni.frame = 1;
+    }
+    if (selector->currentSelection == 2){
+        onePAni.frame = 1;
+        twoPAni.frame = 0;
+    }
 
+    drawSprite2(&gameSprite, &onePAni, 215, 500);
+    drawSprite2(&gameSprite, &twoPAni, 540, 500);
+    drawSprite2(&gameSprite, &still, 180, 180);
+
+}
+
+/////////// GAME //////////
 // UPDATE ALL PLAY PARAMETERS
 void update() {
     switch (game.gameMode){
         case 1: //Looping display
             break;
         case 2: //Player # selection
-            updateInput(&player1);
-            updateInput(&player2);
+            updatePlayerSelect(&player1,&playerSelect);
             break;
         case 3: //Ship selection
             break;
@@ -1077,6 +985,7 @@ void render() {
         case 1: //Looping display
             break;
         case 2: //Player # selection
+            drawPlayerSelect(&playerSelect);
             break;
         case 3: //Ship selection
             break;
@@ -1091,7 +1000,6 @@ void render() {
                 drawCapsule(&capsule2);
                 drawRingmaster(&ringmaster2);
             }
-            //drawAnimation(&shieldAnimation);
             break;
 
     }
