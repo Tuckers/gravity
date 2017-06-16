@@ -36,7 +36,7 @@ double gameSheet[11][4] = {
     {	0	,	480	,	720	,	160	}, // 7 - Stratosphere
     {	0	,	640	,   720	,	160	}, // 8 - Mesosphere
     {	0	,	800	,	720	,	160	}, // 9 - Thermosphere
-    {	0	,	960	,	720	,	160	}, // 10 - Exosphere
+    {	0	,	960	,	720	,	160	} // 10 - Exosphere
 };
 
 void defineImages() {
@@ -114,10 +114,16 @@ typedef struct Animation {
     int last;
 } Animation;
 
-Animation still = {
+Animation titlePlayerSelect = {
     .frame = 0,
     .first = 0,
     .last = 0
+};
+
+Animation titleShipSelect = {
+    .frame = 0,
+    .first = 1,
+    .last = 1
 };
 
 Animation onePAni = {
@@ -132,6 +138,18 @@ Animation twoPAni = {
     .last = 5
 };
 
+// typedef struct Animation2 {
+//     Sprite *sprite
+//     int frame;
+//     double (*sheet)[4];
+// } Sprite;
+//
+// Animation titleShipSelect = {
+//     .sprite = &gameSprite;
+//     .frame = 0;
+//     .sheet[1] = {	0	,	160	,   720	,	160	}
+// };
+
 void drawSprite2(Sprite *sprite, Animation *ani, int x, int y){
     int frame = ani->first + ani->frame;
     #ifdef ROTATE
@@ -145,3 +163,18 @@ void drawSprite2(Sprite *sprite, Animation *ani, int x, int y){
     #endif
     S2D_DrawSprite(sprite->spr);
 }
+//
+// void drawSprite3(Sprite *sprite, Animation2 *ani, int x, int y){
+//     int frame = ani->frame
+//     #ifdef ROTATE
+//         S2D_ClipSprite(sprite->spr, ani->sheet[frame][1], (sprite->width - ani->sheet[frame][0] - ani->sheet[frame][2]), ani->sheet[frame][3], ani->sheet[frame][2]);
+//         sprite->spr->x = y;
+//         sprite->spr->y = nomScreenWidth - x - ani->sheet[frame][2];
+//     #else
+//         S2D_ClipSprite(sprite->spr, ani->sheet[frame][0], ani->sheet[frame][1], ani->sheet[frame][2], ani->sheet[frame][3]);
+//         sprite->spr->x = x;
+//         sprite->spr->y = y;
+//     #endif
+//     S2D_DrawSprite(sprite->spr);
+// }
+//
