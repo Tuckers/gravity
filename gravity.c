@@ -2,6 +2,10 @@
 #include <sys/time.h>
 #include "sprites.h"
 #include "gameDef.h"
+#include "color.h"
+#include "bkg.h"
+#include "rings.h"
+//#include "RMBKG.h"
 
 
 
@@ -14,87 +18,7 @@ bool setupDefined = false;
 float friction = 0.98;
 float entropy = 0.8;
 
-#ifdef ROTATE
-    int screenHeight = 1080;
-    int screenWidth = 1920;
-    int orientation = 1;
-#else
-    int screenHeight = 1920;
-    int screenWidth = 1080;
-    int orientation = 0;
-#endif
-
-
-////////// COLOR DEFINITIONS //////////
-S2D_Color gray = {.r = 0.5, .g = 0.5, .b = 0.5, .a = 1.0};
-S2D_Color green = {.r = 0.0, .g = 1.0, .b = 0.0, .a = 1.0};
-S2D_Color red = {.r = 1.0, .g = 0.0, .b = 0.0, .a = 1.0};
-S2D_Color black = {.r = 0.0, .g = 0.0, .b = 0.0, .a = 1.0};
-S2D_Color white = {.r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0};
-S2D_Color blue = {.r = 0.0, .g = 0.0, .b = 1.0, .a = 1.0};
-S2D_Color lightBlue;
-S2D_Color lightGreen;
-
-void convertColor(S2D_Color *color, float red, float green, float blue) {
-    color->r = red / 255;
-    color->g = green / 255;
-    color->b = blue / 255;
-    color->a = 1.0;
-}
-
-void defineColors(){
-    // Use convert color to define colors using regular RGB values
-    convertColor(&lightBlue, 115, 179, 249);
-    convertColor(&lightGreen, 147, 229, 115);
-}
-
-
-// SPRITES
-typedef struct Movement {
-    int frames;
-    int currentFrame;
-    int frameWidth;
-    int frameHeight;
-    int startingX;
-    int startingY;
-} Movement;
-
-Movement capDown= {
-    .frames = 30,
-    .currentFrame = 0,
-    .frameWidth = 50,
-    .frameHeight = 50,
-    .startingX = 0,
-    .startingY = 300
-};
-
-Movement capLeft = {
-    .frames = 30,
-    .currentFrame = 0,
-    .frameWidth = 100,
-    .frameHeight = 100,
-    .startingX = 0,
-    .startingY = 0
-};
-
-Movement capRight = {
-    .frames = 30,
-    .currentFrame = 0,
-    .frameWidth = 100,
-    .frameHeight = 100,
-    .startingX = 0,
-    .startingY = 200
-};
-
-Movement capBrake = {
-    .frames = 30,
-    .currentFrame = 0,
-    .frameWidth = 100,
-    .frameHeight = 100,
-    .startingX = 0,
-    .startingY = 100
-};
-
+int firstTime = false;
 ////////// GAME STRUCTURES //////////
 
 // LEVELS
@@ -177,6 +101,7 @@ typedef struct Player {
     bool left;
     bool right;
     S2D_Image *image;
+    int ship;
 } Player;
 
 Player player1 = {
@@ -278,145 +203,145 @@ void defineCapsuleSpr(){
     #endif
 }
 
-// RINGS
-typedef struct Ring {
-    int x;
-    int y;
-    int width;
-    int height;
-    S2D_Color *color;
-} Ring;
-
-// Player 1
-Ring capOneRings[5];
-Ring ring1 = {
-    .x = 0,
-    .y = nomScreenHeight,
-    .width = ringWidth,
-    .height = ringHeight,
-    .color = &lightGreen
-};
-Ring ring2 = {
-    .x = 0,
-    .y = nomScreenHeight,
-    .width = ringWidth,
-    .height = ringHeight,
-    .color = &lightGreen
-};
-Ring ring3 = {
-    .x = 0,
-    .y = nomScreenHeight,
-    .width = ringWidth,
-    .height = ringHeight,
-    .color = &lightGreen
-};
-Ring ring4 = {
-    .x = 0,
-    .y = nomScreenHeight,
-    .width = ringWidth,
-    .height = ringHeight,
-    .color = &lightGreen
-};
-Ring ring5 = {
-    .x = 0,
-    .y = nomScreenHeight,
-    .width = ringWidth,
-    .height = ringHeight,
-    .color = &lightGreen
-};
-
-// Player 2
-Ring capTwoRings[5];
-Ring ring6 = {
-    .x = 0,
-    .y = nomScreenHeight,
-    .width = ringWidth,
-    .height = ringHeight,
-    .color = &lightBlue
-};
-Ring ring7 = {
-    .x = 0,
-    .y = nomScreenHeight,
-    .width = ringWidth,
-    .height = ringHeight,
-    .color = &lightBlue
-};
-Ring ring8 = {
-    .x = 0,
-    .y = nomScreenHeight,
-    .width = ringWidth,
-    .height = ringHeight,
-    .color = &lightBlue
-};
-Ring ring9 = {
-    .x = 0,
-    .y = nomScreenHeight,
-    .width = ringWidth,
-    .height = ringHeight,
-    .color = &lightBlue
-};
-Ring ring10 = {
-    .x = 0,
-    .y = nomScreenHeight,
-    .width = ringWidth,
-    .height = ringHeight,
-    .color = &lightBlue
-};
-
-// RINGMASTER
-typedef struct Ringmaster {
-    int rings;
-    Ring *allRings;
-    Ring *one;
-    Ring *two;
-    Ring *three;
-    Ring *four;
-    Ring *five;
-    float velY;
-    int maxY;
-    int seperation;
-    bool delay;
-    int count;
-    bool randomized;
-    S2D_Color *color;
-    Capsule *capsule;
-} Ringmaster;
-
-Ringmaster ringmaster1 = {
-    .rings = 1,
-    .allRings = &capOneRings[0],
-    .one = &ring1,
-    .two = &ring2,
-    .three = &ring3,
-    .four = &ring4,
-    .five = &ring5,
-    .velY = 5.0,
-    .maxY = 10,
-    .seperation = 600,
-    .delay = false,
-    .count = 0,
-    .randomized = false,
-    .color = &lightGreen,
-    .capsule = &capsule1
-};
-
-Ringmaster ringmaster2 = {
-    .rings = 1,
-    .allRings = &capTwoRings[0],
-    .one = &ring6,
-    .two = &ring7,
-    .three = &ring8,
-    .four = &ring9,
-    .five = &ring10,
-    .velY = 5.0,
-    .maxY = 10,
-    .seperation = 600,
-    .delay = true,
-    .count = 0,
-    .randomized = false,
-    .color = &lightBlue,
-    .capsule = &capsule2
-};
+// // RINGS
+// typedef struct Ring {
+//     int x;
+//     int y;
+//     int width;
+//     int height;
+//     S2D_Color *color;
+// } Ring;
+//
+// // Player 1
+// Ring capOneRings[5];
+// Ring ring1 = {
+//     .x = 0,
+//     .y = nomScreenHeight,
+//     .width = ringWidth,
+//     .height = ringHeight,
+//     .color = &lightGreen
+// };
+// Ring ring2 = {
+//     .x = 0,
+//     .y = nomScreenHeight,
+//     .width = ringWidth,
+//     .height = ringHeight,
+//     .color = &lightGreen
+// };
+// Ring ring3 = {
+//     .x = 0,
+//     .y = nomScreenHeight,
+//     .width = ringWidth,
+//     .height = ringHeight,
+//     .color = &lightGreen
+// };
+// Ring ring4 = {
+//     .x = 0,
+//     .y = nomScreenHeight,
+//     .width = ringWidth,
+//     .height = ringHeight,
+//     .color = &lightGreen
+// };
+// Ring ring5 = {
+//     .x = 0,
+//     .y = nomScreenHeight,
+//     .width = ringWidth,
+//     .height = ringHeight,
+//     .color = &lightGreen
+// };
+//
+// // Player 2
+// Ring capTwoRings[5];
+// Ring ring6 = {
+//     .x = 0,
+//     .y = nomScreenHeight,
+//     .width = ringWidth,
+//     .height = ringHeight,
+//     .color = &lightBlue
+// };
+// Ring ring7 = {
+//     .x = 0,
+//     .y = nomScreenHeight,
+//     .width = ringWidth,
+//     .height = ringHeight,
+//     .color = &lightBlue
+// };
+// Ring ring8 = {
+//     .x = 0,
+//     .y = nomScreenHeight,
+//     .width = ringWidth,
+//     .height = ringHeight,
+//     .color = &lightBlue
+// };
+// Ring ring9 = {
+//     .x = 0,
+//     .y = nomScreenHeight,
+//     .width = ringWidth,
+//     .height = ringHeight,
+//     .color = &lightBlue
+// };
+// Ring ring10 = {
+//     .x = 0,
+//     .y = nomScreenHeight,
+//     .width = ringWidth,
+//     .height = ringHeight,
+//     .color = &lightBlue
+// };
+//
+// // RINGMASTER
+// typedef struct Ringmaster {
+//     int rings;
+//     Ring *allRings;
+//     Ring *one;
+//     Ring *two;
+//     Ring *three;
+//     Ring *four;
+//     Ring *five;
+//     float velY;
+//     int maxY;
+//     int seperation;
+//     bool delay;
+//     int count;
+//     bool randomized;
+//     S2D_Color *color;
+//     Capsule *capsule;
+// } Ringmaster;
+//
+// Ringmaster ringmaster1 = {
+//     .rings = 1,
+//     .allRings = &capOneRings[0],
+//     .one = &ring1,
+//     .two = &ring2,
+//     .three = &ring3,
+//     .four = &ring4,
+//     .five = &ring5,
+//     .velY = 5.0,
+//     .maxY = 10,
+//     .seperation = 600,
+//     .delay = false,
+//     .count = 0,
+//     .randomized = false,
+//     .color = &lightGreen,
+//     .capsule = &capsule1
+// };
+//
+// Ringmaster ringmaster2 = {
+//     .rings = 1,
+//     .allRings = &capTwoRings[0],
+//     .one = &ring6,
+//     .two = &ring7,
+//     .three = &ring8,
+//     .four = &ring9,
+//     .five = &ring10,
+//     .velY = 5.0,
+//     .maxY = 10,
+//     .seperation = 600,
+//     .delay = true,
+//     .count = 0,
+//     .randomized = false,
+//     .color = &lightBlue,
+//     .capsule = &capsule2
+// };
 
 // GAME STRUCTURES
 typedef struct Game {
@@ -424,6 +349,7 @@ typedef struct Game {
     bool gameOver;
     int level;
     int players;
+    int altitude;
     Level *levels;
     Player *player1;
     Player *player2;
@@ -441,78 +367,13 @@ void defineGameLevels() {
 }
 
 Game game = {
-    .gameMode = 2,
+    .gameMode = 5,
     .gameOver = false,
+    .altitude = 500000,
     .level = 0,
     .players = 2,
     .levels = &gameLevels[0],
 };
-
-////////// DRAWING FUNCTIONS //////////
-
-// Simplify the S2D_DrawQuad command.
-void drawRectangle(int x, int y, int width, int height, S2D_Color *color) {
-    // Change orientation if enabled
-    if (orientation == 1){
-        int tempY = y;
-        y = x;
-        x = tempY;
-        int tempWidth = width;
-        width = height;
-        height = tempWidth;
-    }
-    S2D_DrawQuad(
-        // Upper left
-        x, y, color->r, color->g, color->b, color->a,
-        // Upper right
-        (x + width), y, color->r, color->g, color->b, color->a,
-        // Lower right
-        (x + width), (y + height), color->r, color->g, color->b, color->a,
-        // Lower left
-        x, (y + height), color->r, color->g, color->b, color->a
-    );
-}
-
-S2D_Color* mixColor(S2D_Color *colorOne, S2D_Color *colorTwo, int balance){
-    S2D_Color *color;
-    color->r = (colorOne->r / 100 * balance) + (colorTwo->r / 100 * (100-balance));
-    color->g = (colorOne->r / 100 * balance) + (colorTwo->r / 100 * (100-balance));
-    color->b = (colorOne->r / 100 * balance) + (colorTwo->r / 100 * (100-balance));
-    color->a = (colorOne->r / 100 * balance) + (colorTwo->r / 100 * (100-balance));
-    return color;
-}
-
-void drawBkg(Capsule *cap1, Capsule *cap2) {
-    Level *currentLevel = &game.levels[game.level];
-    //mixColor(currentLevel->startingColor, currentLevel->endingColor, 50);
-    int x = 0;
-    int y = 0;
-    int width = nomScreenWidth;
-    int height = nomScreenHeight;
-
-    float color1 = cap1->heat / 100;
-    float color2 = cap2->heat / 100;
-
-    // Change orientation if enabled
-    if (orientation == 1){
-        int tempY = y;
-        y = x;
-        x = tempY;
-        int tempWidth = width;
-        width = height;
-        height = tempWidth;
-    }
-    S2D_DrawQuad(
-        // Upper left
-        x, y, color1, 0, 0, 1,
-        // Upper right
-        (x + width), y, color2, 0, 0, 1,
-        // Lower right
-        (x + width), (y + height), color2, 0, 0, 1,
-        // Lower left
-        x, (y + height), color1, 0, 0, 1
-    );
-}
 
 void updateCapsule(Capsule *cap){
     // Check for player input
@@ -616,17 +477,6 @@ void updateCapsule(Capsule *cap){
     }
 }
 
-void drawSprite(S2D_Sprite *spr, Movement *mov, int frame){
-    #ifdef ROTATE
-        int y = (mov->frameWidth * mov->frames) - (mov->frameWidth * frame);
-        S2D_ClipSprite(spr, mov->startingY, y, mov->frameHeight, mov->frameWidth);
-    #else
-        int x = mov->frameWidth * frame;
-        S2D_ClipSprite(spr, x, mov->startingY, mov->frameWidth, mov->frameHeight);
-    #endif
-    S2D_DrawSprite(spr);
-}
-
 void drawCapsule(Capsule *cap){
     // Color change for heat buildup.
     // float r = (1.0 - cap->color->r / 100) * cap->heat;
@@ -663,168 +513,168 @@ void drawCapsule(Capsule *cap){
     }
 }
 
-void drawRing(Ring *ring){
-    drawRectangle(ring->x, ring->y, ring->width, ring->height, ring->color);
-}
+// void drawRing(Ring *ring){
+//     drawRectangle(ring->x, ring->y, ring->width, ring->height, ring->color);
+// }
+//
+// void reorderRings (Ringmaster *ringmaster){
+//     Ring *one = ringmaster->one;
+//     Ring *two = ringmaster->two;
+//     Ring *three = ringmaster->three;
+//     Ring *four = ringmaster->four;
+//     Ring *five = ringmaster->five;
+//     ringmaster->one = two;
+//     ringmaster->two = three;
+//     ringmaster->three = four;
+//     ringmaster->four = five;
+//     ringmaster->five = one;
+// }
+//
+// void randomizeRings (Ringmaster *ringmaster){
+//     // Set an initial random X val for each ring.
+//     ringmaster->one->x = rand() % (nomScreenWidth - ringWidth) + 1;
+//     ringmaster->two->x = rand() % (nomScreenWidth - ringWidth) + 1;
+//     ringmaster->three->x = rand() % (nomScreenWidth - ringWidth) + 1;
+//     ringmaster->four->x = rand() % (nomScreenWidth - ringWidth) + 1;
+//     ringmaster->five->x = rand() % (nomScreenWidth - ringWidth) + 1;
+//     ringmaster->randomized = true;
+// }
 
-void reorderRings (Ringmaster *ringmaster){
-    Ring *one = ringmaster->one;
-    Ring *two = ringmaster->two;
-    Ring *three = ringmaster->three;
-    Ring *four = ringmaster->four;
-    Ring *five = ringmaster->five;
-    ringmaster->one = two;
-    ringmaster->two = three;
-    ringmaster->three = four;
-    ringmaster->four = five;
-    ringmaster->five = one;
-}
-
-void randomizeRings (Ringmaster *ringmaster){
-    // Set an initial random X val for each ring.
-    ringmaster->one->x = rand() % (nomScreenWidth - ringWidth) + 1;
-    ringmaster->two->x = rand() % (nomScreenWidth - ringWidth) + 1;
-    ringmaster->three->x = rand() % (nomScreenWidth - ringWidth) + 1;
-    ringmaster->four->x = rand() % (nomScreenWidth - ringWidth) + 1;
-    ringmaster->five->x = rand() % (nomScreenWidth - ringWidth) + 1;
-    ringmaster->randomized = true;
-}
-
-void checkHit (Ringmaster *ringmaster){
-    // Define hit targets
-    int ringX = ringmaster->one->x;
-    int ringMax = ringX + ringmaster->one->width;
-    int capX = ringmaster->capsule->x;
-    int capMax = capX + ringmaster->capsule->width;
-    // Check for hits
-    if (ringX < capX && capMax < ringMax){
-        ringmaster->capsule->player->score += 100;
-        printf("HIT! Player score: %d\n", ringmaster->capsule->player->score);
-        ringmaster->rings--;
-        ringmaster->one->y = nomScreenHeight;
-        ringmaster->one->x = rand() % (nomScreenWidth - ringWidth) + 1;
-        reorderRings(ringmaster);
-    }
-    else {
-        ringmaster->capsule->heat += 60;
-        printf("MISS! Capsule heat: %d\n", ringmaster->capsule->heat);
-        ringmaster->rings--;
-        ringmaster->one->y = nomScreenHeight;
-        ringmaster->one->x = rand() % (nomScreenWidth - ringWidth) + 1;
-        reorderRings(ringmaster);
-    }
-}
+// void checkHit (Ringmaster *ringmaster){
+//     // Define hit targets
+//     int ringX = ringmaster->one->x;
+//     int ringMax = ringX + ringmaster->one->width;
+//     int capX = ringmaster->capsule->x;
+//     int capMax = capX + ringmaster->capsule->width;
+//     // Check for hits
+//     if (ringX < capX && capMax < ringMax){
+//         ringmaster->capsule->player->score += 100;
+//         printf("HIT! Player score: %d\n", ringmaster->capsule->player->score);
+//         ringmaster->rings--;
+//         ringmaster->one->y = nomScreenHeight;
+//         ringmaster->one->x = rand() % (nomScreenWidth - ringWidth) + 1;
+//         reorderRings(ringmaster);
+//     }
+//     else {
+//         ringmaster->capsule->heat += 60;
+//         printf("MISS! Capsule heat: %d\n", ringmaster->capsule->heat);
+//         ringmaster->rings--;
+//         ringmaster->one->y = nomScreenHeight;
+//         ringmaster->one->x = rand() % (nomScreenWidth - ringWidth) + 1;
+//         reorderRings(ringmaster);
+//     }
+// }
 
 
 // Update function for ring tracking
-void updateRingmaster(Ringmaster *ringmaster){
-    ringmaster->velY = ringmaster->capsule->velY;
-    int playArea = nomScreenHeight - ringmaster->capsule->y - ringmaster->capsule->height;
-    int ringCheckpoint = nomScreenHeight - playArea - ringHeight;
-    // Randomize ring starting X vals
-    if (ringmaster->randomized == false){
-        randomizeRings(ringmaster);
-    }
-    if (ringmaster->one->y < ringCheckpoint){
-        checkHit(ringmaster);
-    }
+// void updateRingmaster(Ringmaster *ringmaster){
+//     ringmaster->velY = ringmaster->capsule->velY;
+//     int playArea = nomScreenHeight - ringmaster->capsule->y - ringmaster->capsule->height;
+//     int ringCheckpoint = nomScreenHeight - playArea - ringHeight;
+//     // Randomize ring starting X vals
+//     if (ringmaster->randomized == false){
+//         randomizeRings(ringmaster);
+//     }
+//     if (ringmaster->one->y < ringCheckpoint){
+//         checkHit(ringmaster);
+//     }
+//
+//
+//     // Case switch for number of rings on display.
+//     switch (ringmaster->rings){
+//         case 0:
+//             ringmaster->rings = 1;
+//         case 1:
+//             if (ringmaster->one->y < (nomScreenHeight - ringmaster->seperation)){
+//                 ringmaster->rings = 2;
+//             }
+//             break;
+//         case 2:
+//             if (ringmaster->two->y < (nomScreenHeight - ringmaster->seperation)){
+//                 ringmaster->rings = 3;
+//             }
+//             break;
+//         case 3:
+//             if (ringmaster->three->y < ringCheckpoint){
+//                 ringmaster->rings = 4;
+//             }
+//             break;
+//         case 4:
+//             if (ringmaster->four->y < ringCheckpoint){
+//                 ringmaster->rings = 5;
+//             }
+//             break;
+//         case 5:
+//             if (ringmaster->five->y < (nomScreenHeight - ringmaster->seperation)){
+//                 ringmaster->rings = 5;
+//             }
+//             break;
+//     }
+// }
 
-
-    // Case switch for number of rings on display.
-    switch (ringmaster->rings){
-        case 0:
-            ringmaster->rings = 1;
-        case 1:
-            if (ringmaster->one->y < (nomScreenHeight - ringmaster->seperation)){
-                ringmaster->rings = 2;
-            }
-            break;
-        case 2:
-            if (ringmaster->two->y < (nomScreenHeight - ringmaster->seperation)){
-                ringmaster->rings = 3;
-            }
-            break;
-        case 3:
-            if (ringmaster->three->y < ringCheckpoint){
-                ringmaster->rings = 4;
-            }
-            break;
-        case 4:
-            if (ringmaster->four->y < ringCheckpoint){
-                ringmaster->rings = 5;
-            }
-            break;
-        case 5:
-            if (ringmaster->five->y < (nomScreenHeight - ringmaster->seperation)){
-                ringmaster->rings = 5;
-            }
-            break;
-    }
-}
-
-void drawRingmaster (Ringmaster *ringmaster){
-    switch (ringmaster->rings) {
-        case 1:
-            if (ringmaster->delay == true){
-                ringmaster->count++;
-                if (ringmaster->count >= 50){
-                    ringmaster->delay = false;
-                }
-            }
-            else {
-                ringmaster->one->y = ringmaster->one->y - ringmaster->velY;
-                drawRing(ringmaster->one);
-            }
-            //printf("Drawing one ring\n");
-            //printf("Ring one Y: %d\n", ringmaster->one->y);
-            break;
-        case 2:
-            //printf("Drawing two rings\n");
-            //printf("Ring one Y: %d\n", ringmaster->one->y);
-            ringmaster->one->y = ringmaster->one->y - ringmaster->velY;
-            ringmaster->two->y = ringmaster->two->y - ringmaster->velY;
-            drawRing(ringmaster->one);
-            drawRing(ringmaster->two);
-            break;
-        case 3:
-            //printf("Drawing three rings\n");
-            //printf("Ring one Y: %d\n", ringmaster->one->y);
-            ringmaster->one->y = ringmaster->one->y - ringmaster->velY;
-            ringmaster->two->y = ringmaster->two->y - ringmaster->velY;
-            ringmaster->three->y = ringmaster->three->y - ringmaster->velY;
-            drawRing(ringmaster->one);
-            drawRing(ringmaster->two);
-            drawRing(ringmaster->three);
-            break;
-        case 4:
-            //printf("Drawing three rings\n");
-            //printf("Ring one Y: %d\n", ringmaster->one->y);
-            ringmaster->one->y = ringmaster->one->y - ringmaster->velY;
-            ringmaster->two->y = ringmaster->two->y - ringmaster->velY;
-            ringmaster->three->y = ringmaster->three->y - ringmaster->velY;
-            ringmaster->four->y = ringmaster->four->y - ringmaster->velY;
-            drawRing(ringmaster->one);
-            drawRing(ringmaster->two);
-            drawRing(ringmaster->three);
-            drawRing(ringmaster->four);
-            break;
-        case 5:
-            //printf("Drawing three rings\n");
-            //printf("Ring one Y: %d\n", ringmaster->one->y);
-            ringmaster->one->y = ringmaster->one->y - ringmaster->velY;
-            ringmaster->two->y = ringmaster->two->y - ringmaster->velY;
-            ringmaster->three->y = ringmaster->three->y - ringmaster->velY;
-            ringmaster->four->y = ringmaster->four->y - ringmaster->velY;
-            ringmaster->five->y = ringmaster->five->y - ringmaster->velY;
-            drawRing(ringmaster->one);
-            drawRing(ringmaster->two);
-            drawRing(ringmaster->three);
-            drawRing(ringmaster->four);
-            drawRing(ringmaster->five);
-            break;
-    }
-
-}
+// void drawRingmaster (Ringmaster *ringmaster){
+//     switch (ringmaster->rings) {
+//         case 1:
+//             if (ringmaster->delay == true){
+//                 ringmaster->count++;
+//                 if (ringmaster->count >= 50){
+//                     ringmaster->delay = false;
+//                 }
+//             }
+//             else {
+//                 ringmaster->one->y = ringmaster->one->y - ringmaster->velY;
+//                 drawRing(ringmaster->one);
+//             }
+//             //printf("Drawing one ring\n");
+//             //printf("Ring one Y: %d\n", ringmaster->one->y);
+//             break;
+//         case 2:
+//             //printf("Drawing two rings\n");
+//             //printf("Ring one Y: %d\n", ringmaster->one->y);
+//             ringmaster->one->y = ringmaster->one->y - ringmaster->velY;
+//             ringmaster->two->y = ringmaster->two->y - ringmaster->velY;
+//             drawRing(ringmaster->one);
+//             drawRing(ringmaster->two);
+//             break;
+//         case 3:
+//             //printf("Drawing three rings\n");
+//             //printf("Ring one Y: %d\n", ringmaster->one->y);
+//             ringmaster->one->y = ringmaster->one->y - ringmaster->velY;
+//             ringmaster->two->y = ringmaster->two->y - ringmaster->velY;
+//             ringmaster->three->y = ringmaster->three->y - ringmaster->velY;
+//             drawRing(ringmaster->one);
+//             drawRing(ringmaster->two);
+//             drawRing(ringmaster->three);
+//             break;
+//         case 4:
+//             //printf("Drawing three rings\n");
+//             //printf("Ring one Y: %d\n", ringmaster->one->y);
+//             ringmaster->one->y = ringmaster->one->y - ringmaster->velY;
+//             ringmaster->two->y = ringmaster->two->y - ringmaster->velY;
+//             ringmaster->three->y = ringmaster->three->y - ringmaster->velY;
+//             ringmaster->four->y = ringmaster->four->y - ringmaster->velY;
+//             drawRing(ringmaster->one);
+//             drawRing(ringmaster->two);
+//             drawRing(ringmaster->three);
+//             drawRing(ringmaster->four);
+//             break;
+//         case 5:
+//             //printf("Drawing three rings\n");
+//             //printf("Ring one Y: %d\n", ringmaster->one->y);
+//             ringmaster->one->y = ringmaster->one->y - ringmaster->velY;
+//             ringmaster->two->y = ringmaster->two->y - ringmaster->velY;
+//             ringmaster->three->y = ringmaster->three->y - ringmaster->velY;
+//             ringmaster->four->y = ringmaster->four->y - ringmaster->velY;
+//             ringmaster->five->y = ringmaster->five->y - ringmaster->velY;
+//             drawRing(ringmaster->one);
+//             drawRing(ringmaster->two);
+//             drawRing(ringmaster->three);
+//             drawRing(ringmaster->four);
+//             drawRing(ringmaster->five);
+//             break;
+//     }
+//
+// }
 
 /////////// KEYBOARD INPUT //////////
 void on_key(S2D_Event e, const char *key) {
@@ -879,12 +729,13 @@ void on_key(S2D_Event e, const char *key) {
 typedef struct Selector {
     bool arrived;
     int items;
-    int currentSelection;
-    bool wrap;
+    int p1Selection;
+    int p2Selection;
     int timeLimit;
     int timeRemaining;
     int count;
-    bool selected;
+    bool p1Selected;
+    bool p2Selected;
 } Selector;
 
 
@@ -893,40 +744,39 @@ typedef struct Selector {
 Selector playerSelect = {
     .arrived = false,
     .items = 2,
-    .currentSelection = 1,
-    .wrap = false,
+    .p1Selection = 1,
     .timeLimit = 10,
     .timeRemaining = 10,
     .count = 0,
-    .selected = false
+    .p1Selected = false
 };
 
 void updatePlayerSelect (Player *player, Selector *selector){
-    if (selector->selected == true){
-        game.gameMode = 5;
+    if (selector->p1Selected == true){
+        game.gameMode = 3;
     }
     else {
         selector->count++;
         if ((selector->count / 60) > selector->timeLimit - selector->timeRemaining){
             selector->timeRemaining--;
             if (selector->timeRemaining < 0){
-                selector->selected = true;
+                selector->p1Selected = true;
             }
         }
-        if (selector->currentSelection == 1){ // 1 player selected
+        if (selector->p1Selection == 1){ // 1 player selected
             game.players = 1;
             if (player->left == false && player->right == true){
-                selector->currentSelection = 2;
+                selector->p1Selection = 2;
             }
         }
         else {
             game.players = 2; // 2 player selected
             if (player->left == true && player->right == false){
-                selector->currentSelection = 1;
+                selector->p1Selection = 1;
             }
         }
         if (player->left == true && player->right == true){
-            selector->selected = true;
+            selector->p1Selected = true;
         }
     }
 }
@@ -940,20 +790,94 @@ void drawPlayerSelect(Selector *selector){
         drawNumber(&numberFont80, 1, 482, 1675);
         drawNumber(&numberFont80, 0, 533, 1675);
     }
-    if (selector->currentSelection == 1){
+    if (selector->p1Selection == 1){
         onePAni.frame = 0;
         twoPAni.frame = 1;
     }
-    if (selector->currentSelection == 2){
+    if (selector->p1Selection == 2){
         onePAni.frame = 1;
         twoPAni.frame = 0;
     }
 
     drawSprite2(&gameSprite, &onePAni, 215, 500);
     drawSprite2(&gameSprite, &twoPAni, 540, 500);
-    drawSprite2(&gameSprite, &still, 180, 180);
+    drawSprite2(&gameSprite, &titlePlayerSelect, 180, 180);
 
 }
+
+////////// SHIP SELECTION //////////
+Selector shipSelect = {
+    .arrived = false,
+    .items = 2,
+    .p1Selection = 1,
+    .p2Selection = 1,
+    .timeLimit = 10,
+    .timeRemaining = 10,
+    .count = 0,
+    .p1Selected = false
+};
+
+void updateShipSelect (Player *p1, Player *p2, Selector *selector){
+    if (selector->p1Selected == true && selector->p2Selected == true){
+        game.gameMode = 5;
+    }
+    else {
+        selector->count++;
+        if ((selector->count / 60) > selector->timeLimit - selector->timeRemaining){
+            selector->timeRemaining--;
+            if (selector->timeRemaining < 0){
+                selector->p1Selected = true;
+                selector->p2Selected = true;
+            }
+        }
+
+        ///// New Code to Evalate /////
+        p1->ship = selector->p1Selection; //set current selection
+        p2->ship = selector->p2Selection;
+        if (p1->left == false && p1->right == true){ //what if right?
+            selector->p1Selection++;
+            if (selector->p1Selection > selector->items){
+                selector->p1Selection = 1;
+            }
+        }
+        else if (p1->left == true && p1->right == false){ //what if left?
+            selector->p1Selection--;
+            if (selector->p1Selection < 1){
+                selector->p1Selection = selector->items;
+            }
+        }
+        else if (p1->left == true && p1->right == true){ //what if select?
+            selector->p1Selected = true;
+        }
+
+        /////////////
+    }
+}
+
+void drawShipSelect(Player *p1, Player *p2, Selector *selector){
+    if (selector->timeRemaining < 10){
+        drawNumber(&numberFont80, 0, 482, 1675);
+        drawNumber(&numberFont80, selector->timeRemaining, 533, 1675);
+    }
+    else {
+        drawNumber(&numberFont80, 1, 482, 1675);
+        drawNumber(&numberFont80, 0, 533, 1675);
+    }
+    if (selector->p1Selection == 1){
+        onePAni.frame = 0;
+        twoPAni.frame = 1;
+    }
+    if (selector->p1Selection == 2){
+        onePAni.frame = 1;
+        twoPAni.frame = 0;
+    }
+
+    //drawSprite2(&gameSprite, &onePAni, 215, 500);
+    //drawSprite2(&gameSprite, &twoPAni, 540, 500);
+    drawSprite2(&gameSprite, &titleShipSelect, 180, 180);
+
+}
+
 
 /////////// GAME //////////
 // UPDATE ALL PLAY PARAMETERS
@@ -965,15 +889,28 @@ void update() {
             updatePlayerSelect(&player1,&playerSelect);
             break;
         case 3: //Ship selection
+            updateShipSelect(&player1, &player2, &shipSelect);
             break;
         case 4: //Introduction
+            if (firstTime == false){
+                generateRings(&rm1);
+                firstTime = true;
+            }
+            updateRingmaster(&rm1);
+            updateBKG(&background);
             break;
         case 5: //Gameplay
             updateCapsule(&capsule1);
-            updateRingmaster(&ringmaster1);
+            if (firstTime == false){
+                generateRings(&rm1);
+                firstTime = true;
+            }
+            updateRingmaster(&rm1);
+            updateBKG(&background);
+            //updateRingmaster(&ringmaster1);
             if (game.players == 2){
                 updateCapsule(&capsule2);
-                updateRingmaster(&ringmaster2);
+                //updateRingmaster(&ringmaster2);
             }
             break;
     }
@@ -988,17 +925,23 @@ void render() {
             drawPlayerSelect(&playerSelect);
             break;
         case 3: //Ship selection
+            drawShipSelect(&player1, &player2, &shipSelect);
             break;
         case 4: //Introduction
+            drawBKG(&background);
+            drawRingmaster(&rm1);
+            //drawRingDemo(&rm1, &ringTest);
             break;
         case 5: //Gameplay
             //drawBkg(&capsule1, &capsule2);
             drawNumber(&numberFont80, player1.score, 100, 100);
             drawCapsule(&capsule1);
-            drawRingmaster(&ringmaster1);
+            drawBKG(&background);
+            drawRingmaster(&rm1);
+            //drawRingmaster(&ringmaster1);
             if (game.players == 2){
                 drawCapsule(&capsule2);
-                drawRingmaster(&ringmaster2);
+                //drawRingmaster(&ringmaster2);
             }
             break;
 
@@ -1017,7 +960,11 @@ int main() {
     // Enable verbose output
     S2D_Diagnostics(true);
     // Create game window, fullscreen.
-    window = S2D_CreateWindow("Gravity", screenWidth, screenHeight, update, render, 0);
+    #ifdef ROTATE
+        window = S2D_CreateWindow("Gravity", screenWidth, screenHeight, update, render, 0);
+    #else
+        window = S2D_CreateWindow("Gravity", screenWidth, screenHeight, update, render, S2D_FULLSCREEN);
+    #endif
     // Temporary method for disabling cursor.
     SDL_ShowCursor(SDL_DISABLE);
     // Enable keyboard input

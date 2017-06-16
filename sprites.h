@@ -1,4 +1,7 @@
 #include "gameDef.h"
+#include "color.h"
+#ifndef SPRITES_H
+#define SPRITES_H
 
 typedef struct Sprite {
     S2D_Sprite *spr;
@@ -138,18 +141,6 @@ Animation twoPAni = {
     .last = 5
 };
 
-// typedef struct Animation2 {
-//     Sprite *sprite
-//     int frame;
-//     double (*sheet)[4];
-// } Sprite;
-//
-// Animation titleShipSelect = {
-//     .sprite = &gameSprite;
-//     .frame = 0;
-//     .sheet[1] = {	0	,	160	,   720	,	160	}
-// };
-
 void drawSprite2(Sprite *sprite, Animation *ani, int x, int y){
     int frame = ani->first + ani->frame;
     #ifdef ROTATE
@@ -163,18 +154,63 @@ void drawSprite2(Sprite *sprite, Animation *ani, int x, int y){
     #endif
     S2D_DrawSprite(sprite->spr);
 }
-//
-// void drawSprite3(Sprite *sprite, Animation2 *ani, int x, int y){
-//     int frame = ani->frame
-//     #ifdef ROTATE
-//         S2D_ClipSprite(sprite->spr, ani->sheet[frame][1], (sprite->width - ani->sheet[frame][0] - ani->sheet[frame][2]), ani->sheet[frame][3], ani->sheet[frame][2]);
-//         sprite->spr->x = y;
-//         sprite->spr->y = nomScreenWidth - x - ani->sheet[frame][2];
-//     #else
-//         S2D_ClipSprite(sprite->spr, ani->sheet[frame][0], ani->sheet[frame][1], ani->sheet[frame][2], ani->sheet[frame][3]);
-//         sprite->spr->x = x;
-//         sprite->spr->y = y;
-//     #endif
-//     S2D_DrawSprite(sprite->spr);
-// }
-//
+
+
+// OLD SPRITES
+typedef struct Movement {
+    int frames;
+    int currentFrame;
+    int frameWidth;
+    int frameHeight;
+    int startingX;
+    int startingY;
+} Movement;
+
+Movement capDown= {
+    .frames = 30,
+    .currentFrame = 0,
+    .frameWidth = 50,
+    .frameHeight = 50,
+    .startingX = 0,
+    .startingY = 300
+};
+
+Movement capLeft = {
+    .frames = 30,
+    .currentFrame = 0,
+    .frameWidth = 100,
+    .frameHeight = 100,
+    .startingX = 0,
+    .startingY = 0
+};
+
+Movement capRight = {
+    .frames = 30,
+    .currentFrame = 0,
+    .frameWidth = 100,
+    .frameHeight = 100,
+    .startingX = 0,
+    .startingY = 200
+};
+
+Movement capBrake = {
+    .frames = 30,
+    .currentFrame = 0,
+    .frameWidth = 100,
+    .frameHeight = 100,
+    .startingX = 0,
+    .startingY = 100
+};
+
+void drawSprite(S2D_Sprite *spr, Movement *mov, int frame){
+    #ifdef ROTATE
+        int y = (mov->frameWidth * mov->frames) - (mov->frameWidth * frame);
+        S2D_ClipSprite(spr, mov->startingY, y, mov->frameHeight, mov->frameWidth);
+    #else
+        int x = mov->frameWidth * frame;
+        S2D_ClipSprite(spr, x, mov->startingY, mov->frameWidth, mov->frameHeight);
+    #endif
+    S2D_DrawSprite(spr);
+}
+
+#endif /* SPRITES_H */
