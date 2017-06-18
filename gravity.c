@@ -245,48 +245,48 @@ void drawCapsule(Capsule *cap){
 }
 
 /////////// KEYBOARD INPUT //////////
-void on_key(S2D_Event e, const char *key) {
-  switch (e) {
-    case S2D_KEYDOWN:
-        if(strcmp(key, "Left") == 0){
+void on_key(S2D_Event e) {
+  switch (e.type) {
+    case S2D_KEY_DOWN:
+        if(strcmp(e.key, "Left") == 0){
             player1.left = true;
             //printf("Player 1 left = %s \n", player1.left ? "true" : "false");
         }
-        if(strcmp(key, "Right") == 0){
+        if(strcmp(e.key, "Right") == 0){
             player1.right = true;
             //printf("Player 1 right = %s \n", player1.left ? "true" : "false");
         }
-        if(strcmp(key, "A") == 0){
+        if(strcmp(e.key, "A") == 0){
             player2.left = true;
             //printf("Player 1 left = %s \n", player1.left ? "true" : "false");
         }
-        if(strcmp(key, "D") == 0){
+        if(strcmp(e.key, "D") == 0){
             player2.right = true;
             //printf("Player 1 left = %s \n", player1.left ? "true" : "false");
         }
-        if(strcmp(key, "Escape") == 0){
+        if(strcmp(e.key, "Escape") == 0){
              S2D_Close(window);
         }
         //printf("Key %s pressed\n", key);
       break;
 
-    case S2D_KEY:
+    case S2D_KEY_HELD:
       //printf("Key %s held down\n", key);
       break;
 
-    case S2D_KEYUP:
+    case S2D_KEY_UP:
       //printf("Key %s released\n", key);
-      if(strcmp(key, "Left") == 0){
+      if(strcmp(e.key, "Left") == 0){
           player1.left = false;
       }
-      if(strcmp(key, "Right") == 0){
+      if(strcmp(e.key, "Right") == 0){
           player1.right = false;
       }
-      if(strcmp(key, "A") == 0){
+      if(strcmp(e.key, "A") == 0){
           player2.left = false;
           //printf("Player 1 left = %s \n", player1.left ? "true" : "false");
       }
-      if(strcmp(key, "D") == 0){
+      if(strcmp(e.key, "D") == 0){
           player2.right = false;
           //printf("Player 1 left = %s \n", player1.left ? "true" : "false");
       }
@@ -472,11 +472,11 @@ void update() {
             updateShip(&capNew);
             //rotateShip(&capNew, deg);
             // updateCapsule(&capsule1);
-            // if (firstTime == false){
-            //     generateRings(&rm1);
-            //     firstTime = true;
-            // }
-            // updateRingmaster(&rm1);
+            if (firstTime == false){
+                generateRings(&rm1);
+                firstTime = true;
+            }
+            updateRingmaster(&rm1);
             // updateBKG(&background);
             // //updateRingmaster(&ringmaster1);
             // if (game.players == 2){
@@ -506,10 +506,10 @@ void render() {
         case 5: //Gameplay
             drawShip(&capNew);
             //drawBkg(&capsule1, &capsule2);
-            // drawNumber(&numberFont80, player1.score, 100, 100);
+            //drawNumber(&numberFont80, player1.score, 100, 100);
             // drawCapsule(&capsule1);
             // drawBKG(&background);
-            // drawRingmaster(&rm1);
+            drawRingmaster(&rm1);
             // //drawRingmaster(&ringmaster1);
             // if (game.players == 2){
             //     drawCapsule(&capsule2);

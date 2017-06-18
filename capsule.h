@@ -119,8 +119,8 @@ typedef struct NewCapsule {
 } NewCapsule;
 
 NewCapsule capNew = {
-    .width = 60,
-    .height = 100,
+    .width = 40,
+    .height = 60,
     .x = 100,
     .y = 100,
     .rotation = 0,
@@ -140,7 +140,7 @@ NewCapsule capNew = {
     .heat = 0,
     .braking = false,
     .player = &player1,
-    .color = &green,
+    .color = &white,
 #ifdef ROTATE
     .left = &capRight,
     .right = &capLeft,
