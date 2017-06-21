@@ -1,5 +1,6 @@
 #include "gameDef.h"
 #include "color.h"
+#include "capsule.h"
 #ifndef RINGS_H
 #define RINGS_H
 
@@ -85,12 +86,21 @@ void updateRingmaster(Ringmaster *rm){
         if (ring->y < nomScreenHeight - 400 && ring->gap < rm->gapSize){
             ring->gap += 4;
         }
-        if (ring->velY < rm->maxY){
-            ring->velY += (nomScreenHeight - (ring->y)) * rm->acceleration;
-            //ring->velY = rm->maxY * 1 - ((ring->y) / nomScreenHeight); // Accelerate speed
+        if (braking == true){
+            ring->velY += (nomScreenHeight - (ring->y)) * -rm->acceleration;
         }
-        if (ring->height > 4){
-            ring->height = 200 * (ring->y - 1000) / nomScreenHeight; //Decrease height
+        else {
+            ring->velY += (nomScreenHeight - (ring->y)) * rm->acceleration;
+        }
+        if (ring->velY > rm->maxY){
+            ring->velY = rm->maxY;
+        }
+        if (ring->velY < -rm->maxY){
+            ring->velY = -rm->maxY;
+        }
+        ring->height = 200 * (ring->y - 1000) / nomScreenHeight; //Decrease height
+        if (ring->height < 4){
+            ring->height = 4;
         }
         ring->y -= ring->velY; //Apply speed to Y value
         if (ring->y < playerHeight){ //Do this when you hit the top
@@ -99,6 +109,41 @@ void updateRingmaster(Ringmaster *rm){
         }
     }
 }
+
+void checkHit(Ringmaster *rm, NewCapsule *cap){
+    Ring *ring = rm->rings[0];
+    int rBoundary = ring->split + ring->gap / 2;
+    int lBoundary = ring->split - ring->gap / 2;
+    if (ring->y <= (cap->y + cap->height) && ring->y > (cap->y + cap->height / 2)){
+        if ((cap->x + cap->width / 2) > lBoundary && (cap->x + cap->width / 2) < rBoundary){
+            cap->passNose = true;
+        }
+        else {
+            cap->passNose = false;
+        }
+    }
+    else if (ring->y <= (cap->y + cap->height / 2) && ring->y > cap->y){
+        if ((cap->x + cap->width / 4) > lBoundary && (cap->x + cap->width * 3 / 4) < rBoundary){
+            cap->passMid = true;
+        }
+        else {
+            cap->passMid = false;
+        }
+    }
+    else if (ring->y <= cap->y){
+        if ((cap->x + cap->width / 2) > lBoundary && (cap->x + cap->width) < rBoundary){
+            cap->passTail = true;
+        }
+        else {
+            cap->passTail = false;
+        }
+        if (cap->passNose == true && cap->passMid == true && cap->passTail == true){
+            cap->player->score += 100;
+        }
+    }
+}
+
+
 
 void drawRing(Ring *ring){
     int x = ring->x;
@@ -147,20 +192,6 @@ void drawRingmaster(Ringmaster *rm){
         drawRing(rm->rings[i]);
     }
 }
-
-
-///// OLD RINGSMASTER /////
-
-
-// void randomizeRings (Ringmaster *ringmaster){
-//     // Set an initial random X val for each ring.
-//     ringmaster->one->x = rand() % (nomScreenWidth - ringWidth) + 1;
-//     ringmaster->two->x = rand() % (nomScreenWidth - ringWidth) + 1;
-//     ringmaster->three->x = rand() % (nomScreenWidth - ringWidth) + 1;
-//     ringmaster->four->x = rand() % (nomScreenWidth - ringWidth) + 1;
-//     ringmaster->five->x = rand() % (nomScreenWidth - ringWidth) + 1;
-//     ringmaster->randomized = true;
-// }
 
 // void checkHit (Ringmaster *ringmaster){
 //     // Define hit targets

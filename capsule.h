@@ -3,6 +3,15 @@
 #ifndef CAPSULE_H
 #define CAPSULE_H
 
+
+int capPoints[6][2] = {
+    {-20,-30}, {20,-30}, {0,30}, {-15,-26}, {15,-26}, {0,19}
+};
+
+int capTransPoints[6][2] = {
+    {-20,-30}, {20,-30}, {0,30}, {-15,-26}, {15,-26}, {0,19}
+};
+
 // CAPSULES
 typedef struct Capsule {
     int width;
@@ -109,6 +118,11 @@ typedef struct NewCapsule {
     int maxSpeed;
     int heat;
     bool braking;
+    bool passNose;
+    bool passMid;
+    bool passTail;
+    int (*points)[2];
+    int (*transPoints)[2];
     S2D_Color *color;
     Player *player;
     S2D_Sprite *spr;
@@ -139,6 +153,8 @@ NewCapsule capNew = {
     .maxSpeed = 10,
     .heat = 0,
     .braking = false,
+    .points = capPoints,
+    .transPoints = capTransPoints,
     .player = &player1,
     .color = &white,
 #ifdef ROTATE
@@ -152,37 +168,99 @@ NewCapsule capNew = {
     .brake = &capBrake
 };
 
+
+typedef struct Point{
+    int x;
+    int y;
+} Point;
+
+Point vector(Point a, Point b){
+    Point c;
+    c.x = a.x - b.x;
+    c.y = a.y - b.y;
+    return c;
+}
+
+int crossProduct(Point a, Point b){
+    int product = a.x * b.y - b.x * a.y;
+    return product;
+}
+
+int dotProduct(Point a, Point b){
+    int product = a.x * b.x + a.y * b.y;
+    return product;
+}
+
+bool sameSide(Point p, Point a, Point b, Point c){
+    int cp1 = crossProduct(vector(b,a),vector(p,a));
+    int cp2 = crossProduct(vector(b,a),vector(c,a));
+    if (cp1 * cp2 >= 0){
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool triCollide(Point p1, Point p2, Point p3, Point a, Point b, Point c){
+    bool check1;
+    bool check2;
+    bool check3;
+    if (sameSide(p1, a, b, c) && sameSide(p1,b,a,c) && sameSide(p1,c,a,b)){
+        check1 = true;
+    }
+    else {
+        check1 = false;
+    }
+    return true;
+}
+
 void rotateShip(NewCapsule *cap, float degrees){
-    // int x1 = cap->x;
-    // int x2 = cap->x + cap->width / 2;
-    // int x3 = cap->x - cap->width / 2;
-    // int y1 = cap->y + cap->height / 2;
-    // int y2 = cap->y - cap->height / 2;
-    // int y3 = cap->y - cap->height / 2;
+    ///// HOLLOW RENDERING /////
+    for (int i = 0; i < 6; i++){
+        cap->transPoints[i][0] = cap->points[i][0] * cos(degrees) - cap->points[i][1] * sin(degrees) + cap->x + 100;
+        cap->transPoints[i][1] = cap->points[i][1] * cos(degrees) + cap->points[i][0] * sin(degrees) + cap->y + 100;
+    }
+
+    ///// SOLID RENDERING /////
     cap->x1 = 0 * cos(degrees) - (cap->height / 2) * sin(degrees) + cap->x;
     cap->x2 = (cap->width / 2) * cos(degrees) - (-cap->height / 2) * sin(degrees) + cap->x;
     cap->x3 = (-cap->width / 2) * cos(degrees) - (-cap->height / 2) * sin(degrees) + cap->x;
     cap->y1 = (cap->height / 2) * cos(degrees) + 0 * sin(degrees) + cap->y;
     cap->y2 = (-cap->height / 2) * cos(degrees) + (cap->width / 2) * sin(degrees) + cap->y;
     cap->y3 = (-cap->height / 2) * cos(degrees) + (-cap->width / 2) * sin(degrees) + cap->y;
-
-
-
-    // int x1 = (cap->x1 - cap->x) * cos(degrees) - (cap->y1 - cap->y) * sin(degrees) + cap->x;
-    // int y1 = (cap->y1 - cap->y) * cos(degrees) + (cap->x1 - cap->x) * sin(degrees) + cap->y;
-    // cap->x1 = x1;
-    // cap->y1 = y1;
-    // int x2 = (cap->x2 - cap->x) * cos(degrees) - (cap->y2 - cap->y) * sin(degrees) + cap->x;
-    // int y2 = (cap->y2 - cap->y) * cos(degrees) + (cap->x2 - cap->x) * sin(degrees) + cap->y;
-    // cap->x2 = x2;
-    // cap->y2 = y2;
-    // int x3 = (cap->x3 - cap->x) * cos(degrees) - (cap->y3 - cap->y) * sin(degrees) + cap->x;
-    // int y3 = (cap->y3 - cap->y) * cos(degrees) + (cap->x3 - cap->x) * sin(degrees) + cap->y;
-    // cap->x3 = x3;
-    // cap->y3 = y3;
 }
 
+
+void drawTriangle(int v1[2], int v2[2], int v3[2], S2D_Color *color){
+    S2D_DrawTriangle(
+        v1[0], v1[1], color->r, color->g, color->b, color->a,
+        v2[0], v2[1], color->r, color->g, color->b, color->a,
+        v3[0], v3[1], color->r, color->g, color->b, color->a
+    );
+}
+
+
 void drawShip(NewCapsule *cap){
+    ///// HOLLOW RENDERING /////
+    int v1[2], v2[2], v3[2], v4[2], v5[2], v6[2];
+    for (int i = 0; i < 2; i++){
+        v1[i] = cap->transPoints[0][i];
+        v2[i] = cap->transPoints[1][i];
+        v3[i] = cap->transPoints[2][i];
+        v4[i] = cap->transPoints[3][i];
+        v5[i] = cap->transPoints[4][i];
+        v6[i] = cap->transPoints[5][i];
+    }
+
+    drawTriangle(v1, v2, v4, cap->color);
+    drawTriangle(v2, v4, v5, cap->color);
+    drawTriangle(v2, v5, v3, cap->color);
+    drawTriangle(v1, v4, v3, cap->color);
+    drawTriangle(v4, v6, v3, cap->color);
+    drawTriangle(v5, v6, v3, cap->color);
+
+    ///// SOLID RENDERING /////
     S2D_DrawTriangle( // Draw outer triangle
         cap->x1,  cap->y1, cap->color->r, cap->color->g, cap->color->b, cap->color->a,
         cap->x2, cap->y2, cap->color->r, cap->color->g, cap->color->b, cap->color->a,
@@ -198,6 +276,7 @@ void updateShip(NewCapsule *cap){
         if (cap->braking == false){
             cap->preDriftY = cap->driftY;
             cap->braking = true;
+            braking = true;
         }
         // If braking, slow capsule and add heat
         cap->driftY = cap->driftY - 1;
@@ -216,6 +295,7 @@ void updateShip(NewCapsule *cap){
     else {
         // If not braking, resume previous speed and reduce heat
         cap->braking = false;
+        braking = false;
         cap->heat--;
         cap->velY = cap->velY + 0.01;
         if (cap->heat < 0){
@@ -227,6 +307,7 @@ void updateShip(NewCapsule *cap){
         if (cap->velY > cap->maxSpeed){
             cap->velY = 10;
         }
+
     }
     // Invert player movement if vertical orientation
     // Update capsule velocity based on player input

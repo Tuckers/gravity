@@ -131,6 +131,7 @@ void updateCapsule(Capsule *cap){
         if (cap->velY < 0){
             cap->velY = 0;
         }
+        braking = true;
     }
     else {
         // If not braking, resume previous speed and reduce heat
@@ -146,6 +147,7 @@ void updateCapsule(Capsule *cap){
         if (cap->velY > currentLevel.maxSpeed){
             cap->velY = 10;
         }
+        braking = false;
     }
     // Invert player movement if vertical orientation
     // Update capsule velocity based on player input
@@ -469,14 +471,16 @@ void update() {
             updateBKG(&background);
             break;
         case 5: //Gameplay
-            updateShip(&capNew);
-            //rotateShip(&capNew, deg);
-            // updateCapsule(&capsule1);
             if (firstTime == false){
                 generateRings(&rm1);
                 firstTime = true;
             }
             updateRingmaster(&rm1);
+            updateShip(&capNew);
+            checkHit(&rm1, &capNew);
+            //rotateShip(&capNew, deg);
+            // updateCapsule(&capsule1);
+
             // updateBKG(&background);
             // //updateRingmaster(&ringmaster1);
             // if (game.players == 2){
@@ -504,12 +508,13 @@ void render() {
             //drawRingDemo(&rm1, &ringTest);
             break;
         case 5: //Gameplay
+            drawRingmaster(&rm1);
             drawShip(&capNew);
             //drawBkg(&capsule1, &capsule2);
-            //drawNumber(&numberFont80, player1.score, 100, 100);
+            drawNumber(&numberFont80, player1.score, 100, 100);
             // drawCapsule(&capsule1);
             // drawBKG(&background);
-            drawRingmaster(&rm1);
+
             // //drawRingmaster(&ringmaster1);
             // if (game.players == 2){
             //     drawCapsule(&capsule2);

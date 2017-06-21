@@ -28,6 +28,7 @@ bool running = true;
 bool setupDefined = false;
 float friction = 0.98;
 float entropy = 0.8;
+bool braking = false;
 
 int firstTime = false;
 
