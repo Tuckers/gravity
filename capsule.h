@@ -4,13 +4,7 @@
 #define CAPSULE_H
 
 
-int capPoints[6][2] = {
-    {-20,-30}, {20,-30}, {0,30}, {-15,-26}, {15,-26}, {0,19}
-};
 
-int capTransPoints[6][2] = {
-    {-20,-30}, {20,-30}, {0,30}, {-15,-26}, {15,-26}, {0,19}
-};
 
 // CAPSULES
 typedef struct Capsule {
@@ -97,6 +91,8 @@ void defineCapsuleSpr(){
     #endif
 }
 
+
+
 typedef struct NewCapsule {
     int width;
     int height;
@@ -121,8 +117,9 @@ typedef struct NewCapsule {
     bool passNose;
     bool passMid;
     bool passTail;
-    int (*points)[2];
-    int (*transPoints)[2];
+    bool hollow;
+    struct Point *points[6];
+    struct Point *transPoints[6];
     S2D_Color *color;
     Player *player;
     S2D_Sprite *spr;
@@ -131,6 +128,37 @@ typedef struct NewCapsule {
     Movement *down;
     Movement *brake;
 } NewCapsule;
+
+Point capPoints[6];
+
+Point capTransPoints[6] = { { .x = -20, .y = -30}, { .x = 20, .y = -30}, { .x = 0, .y = 30}, { .x = -15, .y = -26}, { .x = 15, .y = -26}, { .x = 0, .y = 19} };
+
+
+Point shipOne[6] = {{.x = -20, .y = -30}, {.x = 20, .y = -30}, {.x = 0, .y = 30},
+                    {.x = -18, .y = -25}, {.x = 18, .y = -25}, {.x = 0, .y = 17}};
+
+Point shipTwo[10] = {
+    {.x = -17, .y = -30}, {.x = 17, .y = -30}, {.x = 25, .y = -20}, {.x = 0, .y = 30}, {.x = -25, .y = -20},
+    {.x = -15, .y = -25}, {.x = 15, .y = -25}, {.x = 19, .y = -20}, {.x = 0, .y = 19}, {.x = -19, .y = -20}
+};
+
+Point shipThree[10] = {
+    {.x = -16, .y = -30}, {.x = 16, .y = -30}, {.x = 23, .y = 16}, {.x = 0, .y = 30}, {.x = -23, .y = 16},
+    {.x = -12, .y = -25}, {.x = 12, .y = -25}, {.x = 18, .y = 14}, {.x = 0, .y = 24}, {.x = -18, .y = 14}
+};
+
+Point shipFour[10] = {
+    {.x = -11, .y = -30}, {.x = 11, .y = -30}, {.x = 25, .y = 4}, {.x = 0, .y = 30}, {.x = -25, .y = 4},
+    {.x = -8, .y = -30}, {.x = 8, .y = -30}, {.x = 19, .y = 3}, {.x = 0, .y = 23}, {.x = -19, .y = 3}
+};
+
+Point shipFive[10] = {
+    {.x = -20, .y = -30}, {.x = 20, .y = -30}, {.x = 20, .y = 0}, {.x = 0, .y = 30}, {.x = -20, .y = 0},
+    {.x = -15, .y = -25}, {.x = 15, .y = -25}, {.x = 15, .y = -2}, {.x = 0, .y = 21}, {.x = -15, .y = -2}
+};
+
+
+offset
 
 NewCapsule capNew = {
     .width = 40,
@@ -153,8 +181,7 @@ NewCapsule capNew = {
     .maxSpeed = 10,
     .heat = 0,
     .braking = false,
-    .points = capPoints,
-    .transPoints = capTransPoints,
+    .hollow = false,
     .player = &player1,
     .color = &white,
 #ifdef ROTATE
@@ -168,11 +195,69 @@ NewCapsule capNew = {
     .brake = &capBrake
 };
 
+NewCapsule capNew2 = {
+    .width = 40,
+    .height = 60,
+    .x = nomScreenWidth - 100,
+    .y = 100,
+    .rotation = 0,
+    .x1 = 100,
+    .y1 = 180,
+    .x2 = 140,
+    .y2 = 60,
+    .x3 = 60,
+    .y3 = 60,
+    .velX = 0,
+    .velY = 0,
+    .driftY = 0.5,
+    .preDriftY = 0,
+    .maxX = 20,
+    .maxY = 10,
+    .maxSpeed = 10,
+    .heat = 0,
+    .braking = false,
+    .hollow = true,
+    .player = &player2,
+    .color = &white,
+#ifdef ROTATE
+    .left = &capRight,
+    .right = &capLeft,
+#else
+    .left = &capLeft,
+    .right = &capRight,
+#endif
+    .down = &capDown,
+    .brake = &capBrake
+};
 
-typedef struct Point{
-    int x;
-    int y;
-} Point;
+
+// Point oc1 = { .x = -20, .y = -30};
+// Point oc2 = ;
+// Point oc3 = { .x = 0, .y = 30};
+// Point ic1 = { .x = -15, .y = -26};
+// Point ic2 = { .x = 15, .y = -26};
+// Point ic3 = { .x = 0, .y = 19};
+
+// Point capPoints[6] = {
+//     oc1, oc2, oc3, ic1, ic2, ic3
+// };
+Point cpA1[6];
+Point cpT1[6];
+Point cpA2[6];
+Point cpT2[6];
+
+int cp[6][2] = {{-20, -30}, {20, -30}, {0, 30}, {-15, -26}, {15, -26}, {0, 19}};
+
+void generateCapPoints(NewCapsule *cap, Point cpArray[6], Point cpTransArray[6]){
+    for (int i=0; i<6; i++){
+        cpArray[i].x = cp[i][0];
+        cpArray[i].y = cp[i][1];
+        cpTransArray[i].x = cp[i][0];
+        cpTransArray[i].y = cp[i][1];
+        cap->points[i] = &cpArray[i];
+        cap->transPoints[i] = &cpTransArray[i];
+    }
+}
 
 Point vector(Point a, Point b){
     Point c;
@@ -212,14 +297,37 @@ bool triCollide(Point p1, Point p2, Point p3, Point a, Point b, Point c){
     else {
         check1 = false;
     }
-    return true;
+    if (sameSide(p2, a, b, c) && sameSide(p2,b,a,c) && sameSide(p2,c,a,b)){
+        check2 = true;
+    }
+    else {
+        check2 = false;
+    }
+    if (sameSide(p3, a, b, c) && sameSide(p3,b,a,c) && sameSide(p3,c,a,b)){
+        check3 = true;
+    }
+    else {
+        check3 = false;
+    }
+    if (check1 || check2 || check3){
+        return true;
+    }
+    else{
+        return false;
+    }
+
 }
 
+
+
 void rotateShip(NewCapsule *cap, float degrees){
+
     ///// HOLLOW RENDERING /////
+
     for (int i = 0; i < 6; i++){
-        cap->transPoints[i][0] = cap->points[i][0] * cos(degrees) - cap->points[i][1] * sin(degrees) + cap->x + 100;
-        cap->transPoints[i][1] = cap->points[i][1] * cos(degrees) + cap->points[i][0] * sin(degrees) + cap->y + 100;
+        //printf("Capsule pointsValue %d.x = %d \n", i, cap->points[i]->x);
+         cap->transPoints[i]->x = cap->points[i]->x * cos(degrees) - cap->points[i]->y * sin(degrees) + cap->x + 100;
+         cap->transPoints[i]->y = cap->points[i]->y * cos(degrees) + cap->points[i]->x * sin(degrees) + cap->y + 100;
     }
 
     ///// SOLID RENDERING /////
@@ -232,40 +340,36 @@ void rotateShip(NewCapsule *cap, float degrees){
 }
 
 
-void drawTriangle(int v1[2], int v2[2], int v3[2], S2D_Color *color){
+void drawTriangle(Point *v1, Point *v2, Point *v3, S2D_Color *color){
     S2D_DrawTriangle(
-        v1[0], v1[1], color->r, color->g, color->b, color->a,
-        v2[0], v2[1], color->r, color->g, color->b, color->a,
-        v3[0], v3[1], color->r, color->g, color->b, color->a
+        v1->x, v1->y, color->r, color->g, color->b, color->a,
+        v2->x, v2->y, color->r, color->g, color->b, color->a,
+        v3->x, v3->y, color->r, color->g, color->b, color->a
     );
 }
 
 
 void drawShip(NewCapsule *cap){
-    ///// HOLLOW RENDERING /////
-    int v1[2], v2[2], v3[2], v4[2], v5[2], v6[2];
-    for (int i = 0; i < 2; i++){
-        v1[i] = cap->transPoints[0][i];
-        v2[i] = cap->transPoints[1][i];
-        v3[i] = cap->transPoints[2][i];
-        v4[i] = cap->transPoints[3][i];
-        v5[i] = cap->transPoints[4][i];
-        v6[i] = cap->transPoints[5][i];
+    if (cap->hollow == true){
+        ///// HOLLOW RENDERING /////
+        drawTriangle(cap->transPoints[0], cap->transPoints[1], cap->transPoints[3], cap->color);
+        drawTriangle(cap->transPoints[1], cap->transPoints[3], cap->transPoints[4], cap->color);
+        drawTriangle(cap->transPoints[1], cap->transPoints[4], cap->transPoints[2], cap->color);
+        drawTriangle(cap->transPoints[0], cap->transPoints[3], cap->transPoints[2], cap->color);
+        drawTriangle(cap->transPoints[3], cap->transPoints[5], cap->transPoints[2], cap->color);
+        drawTriangle(cap->transPoints[4], cap->transPoints[5], cap->transPoints[2], cap->color);
+    }
+    else {
+        ///// SOLID RENDERING /////
+        S2D_DrawTriangle( // Draw outer triangle
+            cap->x1,  cap->y1, cap->color->r, cap->color->g, cap->color->b, cap->color->a,
+            cap->x2, cap->y2, cap->color->r, cap->color->g, cap->color->b, cap->color->a,
+            cap->x3, cap->y3, cap->color->r, cap->color->g, cap->color->b, cap->color->a
+        );
     }
 
-    drawTriangle(v1, v2, v4, cap->color);
-    drawTriangle(v2, v4, v5, cap->color);
-    drawTriangle(v2, v5, v3, cap->color);
-    drawTriangle(v1, v4, v3, cap->color);
-    drawTriangle(v4, v6, v3, cap->color);
-    drawTriangle(v5, v6, v3, cap->color);
 
-    ///// SOLID RENDERING /////
-    S2D_DrawTriangle( // Draw outer triangle
-        cap->x1,  cap->y1, cap->color->r, cap->color->g, cap->color->b, cap->color->a,
-        cap->x2, cap->y2, cap->color->r, cap->color->g, cap->color->b, cap->color->a,
-        cap->x3, cap->y3, cap->color->r, cap->color->g, cap->color->b, cap->color->a
-    );
+
 }
 
 void updateShip(NewCapsule *cap){

@@ -1,14 +1,10 @@
 #include <simple2d.h>
-#include <sys/time.h>
 #include "sprites.h"
 #include "gameDef.h"
 #include "color.h"
 #include "bkg.h"
 #include "rings.h"
 #include "capsule.h"
-//#include "RMBKG.h"
-
-
 
 S2D_Window *window;
 
@@ -449,6 +445,8 @@ void drawShipSelect(Player *p1, Player *p2, Selector *selector){
 }
 
 
+
+
 /////////// GAME //////////
 // UPDATE ALL PLAY PARAMETERS
 float deg = 0.1;
@@ -473,11 +471,15 @@ void update() {
         case 5: //Gameplay
             if (firstTime == false){
                 generateRings(&rm1);
+                generateCapPoints(&capNew, cpA1, cpT1);
+                generateCapPoints(&capNew2, cpA2, cpT2);
                 firstTime = true;
             }
             updateRingmaster(&rm1);
             updateShip(&capNew);
+            updateShip(&capNew2);
             checkHit(&rm1, &capNew);
+            checkHit(&rm1, &capNew2);
             //rotateShip(&capNew, deg);
             // updateCapsule(&capsule1);
 
@@ -510,8 +512,10 @@ void render() {
         case 5: //Gameplay
             drawRingmaster(&rm1);
             drawShip(&capNew);
+            drawShip(&capNew2);
             //drawBkg(&capsule1, &capsule2);
             drawNumber(&numberFont80, player1.score, 100, 100);
+            drawNumber(&numberFont80, player2.score, nomScreenWidth - 200, 100);
             // drawCapsule(&capsule1);
             // drawBKG(&background);
 

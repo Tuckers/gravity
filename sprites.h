@@ -141,6 +141,7 @@ Animation twoPAni = {
     .last = 5
 };
 
+
 void drawSprite2(Sprite *sprite, Animation *ani, int x, int y){
     int frame = ani->first + ani->frame;
     #ifdef ROTATE

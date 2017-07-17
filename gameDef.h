@@ -32,6 +32,11 @@ bool braking = false;
 
 int firstTime = false;
 
+typedef struct Point{
+    int x;
+    int y;
+} Point;
+
 // LEVELS
 typedef struct Level {
     char name[50];
