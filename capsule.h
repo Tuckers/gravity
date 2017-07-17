@@ -157,9 +157,6 @@ Point shipFive[10] = {
     {.x = -15, .y = -25}, {.x = 15, .y = -25}, {.x = 15, .y = -2}, {.x = 0, .y = 21}, {.x = -15, .y = -2}
 };
 
-
-offset
-
 NewCapsule capNew = {
     .width = 40,
     .height = 60,
