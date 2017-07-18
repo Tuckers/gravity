@@ -471,8 +471,10 @@ void update() {
         case 5: //Gameplay
             if (firstTime == false){
                 generateRings(&rm1);
-                generateCapPoints(&capNew, cpA1, cpT1);
-                generateCapPoints(&capNew2, cpA2, cpT2);
+                generateCapPoints(&capNew, cpA1, cpT1, shipFive, 10, false);
+                generateCapPoints(&capNew2, cpA2, cpT2, shipFive, 10, true);
+                //generateCapPoints(&capNew, cpA1, cpT1);
+                //generateCapPoints(&capNew2, cpA2, cpT2);
                 firstTime = true;
             }
             updateRingmaster(&rm1);

@@ -1,5 +1,6 @@
 #include "gameDef.h"
 #include "color.h"
+#include "drawing.h"
 #ifndef CAPSULE_H
 #define CAPSULE_H
 
@@ -118,8 +119,9 @@ typedef struct NewCapsule {
     bool passMid;
     bool passTail;
     bool hollow;
-    struct Point *points[6];
-    struct Point *transPoints[6];
+    int shipSize;
+    struct Point *points[10];
+    struct Point *transPoints[10];
     S2D_Color *color;
     Player *player;
     S2D_Sprite *spr;
@@ -131,11 +133,14 @@ typedef struct NewCapsule {
 
 Point capPoints[6];
 
-Point capTransPoints[6] = { { .x = -20, .y = -30}, { .x = 20, .y = -30}, { .x = 0, .y = 30}, { .x = -15, .y = -26}, { .x = 15, .y = -26}, { .x = 0, .y = 19} };
+Point capTransPoints[6] = {{ .x = -20, .y = -30}, { .x = 20, .y = -30}, { .x = 0, .y = 30},
+                            { .x = -15, .y = -26}, { .x = 15, .y = -26}, { .x = 0, .y = 17}};
 
 
-Point shipOne[6] = {{.x = -20, .y = -30}, {.x = 20, .y = -30}, {.x = 0, .y = 30},
-                    {.x = -18, .y = -25}, {.x = 18, .y = -25}, {.x = 0, .y = 17}};
+Point shipOne[6] = {
+    {.x = -25, .y = -30}, {.x = 25, .y = -30}, {.x = 0, .y = 30},
+    {.x = -18, .y = -26}, {.x = 18, .y = -26}, {.x = 0, .y = 17}
+};
 
 Point shipTwo[10] = {
     {.x = -17, .y = -30}, {.x = 17, .y = -30}, {.x = 25, .y = -20}, {.x = 0, .y = 30}, {.x = -25, .y = -20},
@@ -149,7 +154,7 @@ Point shipThree[10] = {
 
 Point shipFour[10] = {
     {.x = -11, .y = -30}, {.x = 11, .y = -30}, {.x = 25, .y = 4}, {.x = 0, .y = 30}, {.x = -25, .y = 4},
-    {.x = -8, .y = -30}, {.x = 8, .y = -30}, {.x = 19, .y = 3}, {.x = 0, .y = 23}, {.x = -19, .y = 3}
+    {.x = -8, .y = -25}, {.x = 8, .y = -25}, {.x = 19, .y = 3}, {.x = 0, .y = 23}, {.x = -19, .y = 3}
 };
 
 Point shipFive[10] = {
@@ -178,7 +183,6 @@ NewCapsule capNew = {
     .maxSpeed = 10,
     .heat = 0,
     .braking = false,
-    .hollow = false,
     .player = &player1,
     .color = &white,
 #ifdef ROTATE
@@ -213,7 +217,6 @@ NewCapsule capNew2 = {
     .maxSpeed = 10,
     .heat = 0,
     .braking = false,
-    .hollow = true,
     .player = &player2,
     .color = &white,
 #ifdef ROTATE
@@ -238,23 +241,34 @@ NewCapsule capNew2 = {
 // Point capPoints[6] = {
 //     oc1, oc2, oc3, ic1, ic2, ic3
 // };
-Point cpA1[6];
-Point cpT1[6];
-Point cpA2[6];
-Point cpT2[6];
+Point cpA1[10];
+Point cpT1[10];
+Point cpA2[10];
+Point cpT2[10];
 
 int cp[6][2] = {{-20, -30}, {20, -30}, {0, 30}, {-15, -26}, {15, -26}, {0, 19}};
 
-void generateCapPoints(NewCapsule *cap, Point cpArray[6], Point cpTransArray[6]){
-    for (int i=0; i<6; i++){
-        cpArray[i].x = cp[i][0];
-        cpArray[i].y = cp[i][1];
-        cpTransArray[i].x = cp[i][0];
-        cpTransArray[i].y = cp[i][1];
+void generateCapPoints(NewCapsule *cap, Point cpArray[10], Point cpTransArray[10], Point shipPoints[10], int shipSize, bool hollow){
+    for (int i=0; i<shipSize; i++){
+        cpArray[i] = shipPoints[i];
+        cpTransArray[i] = shipPoints[i];
         cap->points[i] = &cpArray[i];
         cap->transPoints[i] = &cpTransArray[i];
+        cap->shipSize = shipSize;
+        cap->hollow = hollow;
     }
 }
+
+// void generateCapPoints(NewCapsule *cap, Point cpArray[6], Point cpTransArray[6]){
+//     for (int i=0; i<6; i++){
+//         cpArray[i].x = cp[i][0];
+//         cpArray[i].y = cp[i][1];
+//         cpTransArray[i].x = cp[i][0];
+//         cpTransArray[i].y = cp[i][1];
+//         cap->points[i] = &cpArray[i];
+//         cap->transPoints[i] = &cpTransArray[i];
+//     }
+// }
 
 Point vector(Point a, Point b){
     Point c;
@@ -315,54 +329,54 @@ bool triCollide(Point p1, Point p2, Point p3, Point a, Point b, Point c){
 
 }
 
-
-
 void rotateShip(NewCapsule *cap, float degrees){
 
     ///// HOLLOW RENDERING /////
-
-    for (int i = 0; i < 6; i++){
+    //int shipSize = sizeof(cap->points) / sizeof(cap->points[0]);
+    int shipSize = cap->shipSize;
+    for (int i = 0; i < shipSize; i++){
         //printf("Capsule pointsValue %d.x = %d \n", i, cap->points[i]->x);
          cap->transPoints[i]->x = cap->points[i]->x * cos(degrees) - cap->points[i]->y * sin(degrees) + cap->x + 100;
          cap->transPoints[i]->y = cap->points[i]->y * cos(degrees) + cap->points[i]->x * sin(degrees) + cap->y + 100;
     }
 
-    ///// SOLID RENDERING /////
-    cap->x1 = 0 * cos(degrees) - (cap->height / 2) * sin(degrees) + cap->x;
-    cap->x2 = (cap->width / 2) * cos(degrees) - (-cap->height / 2) * sin(degrees) + cap->x;
-    cap->x3 = (-cap->width / 2) * cos(degrees) - (-cap->height / 2) * sin(degrees) + cap->x;
-    cap->y1 = (cap->height / 2) * cos(degrees) + 0 * sin(degrees) + cap->y;
-    cap->y2 = (-cap->height / 2) * cos(degrees) + (cap->width / 2) * sin(degrees) + cap->y;
-    cap->y3 = (-cap->height / 2) * cos(degrees) + (-cap->width / 2) * sin(degrees) + cap->y;
+    // ///// SOLID RENDERING /////
+    // cap->x1 = 0 * cos(degrees) - (cap->height / 2) * sin(degrees) + cap->x;
+    // cap->x2 = (cap->width / 2) * cos(degrees) - (-cap->height / 2) * sin(degrees) + cap->x;
+    // cap->x3 = (-cap->width / 2) * cos(degrees) - (-cap->height / 2) * sin(degrees) + cap->x;
+    // cap->y1 = (cap->height / 2) * cos(degrees) + 0 * sin(degrees) + cap->y;
+    // cap->y2 = (-cap->height / 2) * cos(degrees) + (cap->width / 2) * sin(degrees) + cap->y;
+    // cap->y3 = (-cap->height / 2) * cos(degrees) + (-cap->width / 2) * sin(degrees) + cap->y;
 }
-
-
-void drawTriangle(Point *v1, Point *v2, Point *v3, S2D_Color *color){
-    S2D_DrawTriangle(
-        v1->x, v1->y, color->r, color->g, color->b, color->a,
-        v2->x, v2->y, color->r, color->g, color->b, color->a,
-        v3->x, v3->y, color->r, color->g, color->b, color->a
-    );
-}
-
 
 void drawShip(NewCapsule *cap){
+    int shipSize = cap->shipSize / 2;
+    //int shipSize = sizeof(cap->transPoints) / sizeof(cap->transPoints[0]) / 2;
+    //int shipSize = 6;
     if (cap->hollow == true){
         ///// HOLLOW RENDERING /////
-        drawTriangle(cap->transPoints[0], cap->transPoints[1], cap->transPoints[3], cap->color);
-        drawTriangle(cap->transPoints[1], cap->transPoints[3], cap->transPoints[4], cap->color);
-        drawTriangle(cap->transPoints[1], cap->transPoints[4], cap->transPoints[2], cap->color);
-        drawTriangle(cap->transPoints[0], cap->transPoints[3], cap->transPoints[2], cap->color);
-        drawTriangle(cap->transPoints[3], cap->transPoints[5], cap->transPoints[2], cap->color);
-        drawTriangle(cap->transPoints[4], cap->transPoints[5], cap->transPoints[2], cap->color);
+        for (int i = 0; i < shipSize; i++){
+            if (i == shipSize - 1){
+                drawTriangle(cap->transPoints[i], cap->transPoints[0], cap->transPoints[(i + shipSize)], cap->color);
+                drawTriangle(cap->transPoints[(i + shipSize)], cap->transPoints[0], cap->transPoints[(0 + shipSize)], cap->color);
+            }
+            else {
+                drawTriangle(cap->transPoints[i], cap->transPoints[(i + 1)], cap->transPoints[(i + shipSize)], cap->color);
+                drawTriangle(cap->transPoints[(i + shipSize)], cap->transPoints[(i + 1)], cap->transPoints[(i + 1 + shipSize)], cap->color);
+            }
+
+        }
     }
     else {
         ///// SOLID RENDERING /////
-        S2D_DrawTriangle( // Draw outer triangle
-            cap->x1,  cap->y1, cap->color->r, cap->color->g, cap->color->b, cap->color->a,
-            cap->x2, cap->y2, cap->color->r, cap->color->g, cap->color->b, cap->color->a,
-            cap->x3, cap->y3, cap->color->r, cap->color->g, cap->color->b, cap->color->a
-        );
+        if (shipSize == 3){
+            drawTriangle(cap->transPoints[0], cap->transPoints[1], cap->transPoints[2], cap->color);
+        }
+        else {
+            drawTriangle(cap->transPoints[4], cap->transPoints[2], cap->transPoints[3], cap->color);
+            drawQuad(cap->transPoints[0], cap->transPoints[1], cap->transPoints[2], cap->transPoints[4], cap->color);
+        }
+
     }
 
 
