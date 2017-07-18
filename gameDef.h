@@ -2,7 +2,7 @@
 #define GAMEDEF_H
 
 // Define to enable 90degree rotation.
-//#define ROTATE
+#define ROTATE
 
 #define capsuleHeight 100
 #define capsuleWidth 100
@@ -63,14 +63,14 @@ typedef struct Player {
 } Player;
 
 Player player1 = {
-    .name = "Tucker",
+    .name = "Player 1",
     .score = 0,
     .left = false,
     .right = false
 };
 
 Player player2 = {
-    .name = "Spencer",
+    .name = "Player 2",
     .score = 0,
     .left = false,
     .right = false

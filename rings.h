@@ -110,7 +110,7 @@ void updateRingmaster(Ringmaster *rm){
     }
 }
 
-void checkHit(Ringmaster *rm, NewCapsule *cap){
+void checkHit(Ringmaster *rm, Capsule *cap){
     Ring *ring = rm->rings[0];
     int rBoundary = ring->split + ring->gap / 2;
     int lBoundary = ring->split - ring->gap / 2;
@@ -155,36 +155,69 @@ void drawRing(Ring *ring){
     int width3 = ring->gap;
     int x3 = ring->split - ring->gap / 2;
     S2D_Color *color = ring->color;
-    S2D_DrawQuad(
-        // Upper left
-        x, y, color->r, color->g, color->b, color->a,
-        // Upper right
-        (x + width), y, color->r, color->g, color->b, color->a,
-        // Lower right
-        (x + width), (y + height), color->r, color->g, color->b, color->a,
-        // Lower left
-        x, (y + height), color->r, color->g, color->b, color->a
-    );
-    S2D_DrawQuad(
-        // Upper left
-        x2, y, color->r, color->g, color->b, color->a,
-        // Upper right
-        (x2 + width2), y, color->r, color->g, color->b, color->a,
-        // Lower right
-        (x2 + width2), (y + height), color->r, color->g, color->b, color->a,
-        // Lower left
-        x2, (y + height), color->r, color->g, color->b, color->a
-    );
-    S2D_DrawQuad(
-        // Upper left
-        x3, y, 1, 1, 1, 1,
-        // Upper right
-        (x3 + width3), y, 1, 1, 1, 1,
-        // Lower right
-        (x3 + width3), (y + height), 1, 1, 1, 1,
-        // Lower left
-        x3, (y + height), 1, 1, 1, 1
-    );
+    #ifdef ROTATE
+        S2D_DrawQuad(
+            // Upper left
+            y, (nomScreenWidth - x), color->r, color->g, color->b, color->a,
+            // Upper right
+            y, (nomScreenWidth - (x + width)), color->r, color->g, color->b, color->a,
+            // Lower right
+            (y + height), (nomScreenWidth - (x + width)), color->r, color->g, color->b, color->a,
+            // Lower left
+            (y + height), (nomScreenWidth - x), color->r, color->g, color->b, color->a
+        );
+        S2D_DrawQuad(
+            // Upper left
+            y, (nomScreenWidth - x2), color->r, color->g, color->b, color->a,
+            // Upper right
+            y, (nomScreenWidth - (x2 + width2)), color->r, color->g, color->b, color->a,
+            // Lower right
+            (y + height), (nomScreenWidth - (x2 + width2)), color->r, color->g, color->b, color->a,
+            // Lower left
+            (y + height), (nomScreenWidth - x2), color->r, color->g, color->b, color->a
+        );
+        // S2D_DrawQuad(
+        //     // Upper left
+        //     y, (nomScreenWidth - x3), color->r, color->g, color->b, color->a,
+        //     // Upper right
+        //     y, (nomScreenWidth - (x3 + width3)), color->r, color->g, color->b, color->a,
+        //     // Lower right
+        //     (y + height), (nomScreenWidth - (x3 + width3)), color->r, color->g, color->b, color->a,
+        //     // Lower left
+        //     (y + height), (nomScreenWidth - x3), color->r, color->g, color->b, color->a
+        // );
+    #else
+        S2D_DrawQuad(
+            // Upper left
+            x, y, color->r, color->g, color->b, color->a,
+            // Upper right
+            (x + width), y, color->r, color->g, color->b, color->a,
+            // Lower right
+            (x + width), (y + height), color->r, color->g, color->b, color->a,
+            // Lower left
+            x, (y + height), color->r, color->g, color->b, color->a
+        );
+        S2D_DrawQuad(
+            // Upper left
+            x2, y, color->r, color->g, color->b, color->a,
+            // Upper right
+            (x2 + width2), y, color->r, color->g, color->b, color->a,
+            // Lower right
+            (x2 + width2), (y + height), color->r, color->g, color->b, color->a,
+            // Lower left
+            x2, (y + height), color->r, color->g, color->b, color->a
+        );
+        // S2D_DrawQuad(
+        //     // Upper left
+        //     x3, y, 1, 1, 1, 1,
+        //     // Upper right
+        //     (x3 + width3), y, 1, 1, 1, 1,
+        //     // Lower right
+        //     (x3 + width3), (y + height), 1, 1, 1, 1,
+        //     // Lower left
+        //     x3, (y + height), 1, 1, 1, 1
+        // );
+    #endif
 }
 
 void drawRingmaster(Ringmaster *rm){

@@ -26,27 +26,65 @@ double nf80Sheet[10][4] = {
     {	585	,	0	,	65	,	65  }
 };
 
+// Sprite gameSprite;
+// S2D_Sprite *gameImg;
+// double gameSheet[11][4] = {
+//     {	0	,	0	,	720	,	160	}, // 0 - Select players
+//     {	0	,	160	,   720	,	160	}, // 1 - Select your ship
+//     {	720	,	0	,   325	,	380	}, // 2 - 1 player selected
+//     {	1045,	0	,	325	,	380	}, // 3 - 1 player unselected
+//     {	1370,	0	,	325	,	380	}, // 4 - 2 player selected
+//     {	1695,	0	,   325	,	380	}, // 5 - 2 player unselected
+//     {	0	,	320	,	720	,	160	}, // 6 - Troposphere
+//     {	0	,	480	,	720	,	160	}, // 7 - Stratosphere
+//     {	0	,	640	,   720	,	160	}, // 8 - Mesosphere
+//     {	0	,	800	,	720	,	160	}, // 9 - Thermosphere
+//     {	0	,	960	,	720	,	160	} // 10 - Exosphere
+// };
+
 Sprite gameSprite;
 S2D_Sprite *gameImg;
-double gameSheet[11][4] = {
-    {	0	,	0	,	720	,	160	}, // 0 - Select players
-    {	0	,	160	,   720	,	160	}, // 1 - Select your ship
-    {	720	,	0	,   325	,	380	}, // 2 - 1 player selected
-    {	1045,	0	,	325	,	380	}, // 3 - 1 player unselected
-    {	1370,	0	,	325	,	380	}, // 4 - 2 player selected
-    {	1695,	0	,   325	,	380	}, // 5 - 2 player unselected
-    {	0	,	320	,	720	,	160	}, // 6 - Troposphere
-    {	0	,	480	,	720	,	160	}, // 7 - Stratosphere
-    {	0	,	640	,   720	,	160	}, // 8 - Mesosphere
-    {	0	,	800	,	720	,	160	}, // 9 - Thermosphere
-    {	0	,	960	,	720	,	160	} // 10 - Exosphere
+double gameSheet[10][4] = {
+    {	0	,	0	,	280	,	180	}, // 0 - Select players
+    {	0	,	180	,   280	,	180	}, // 1 - Select your ship
+    {	0	,	360	,   152	,	36	}, // 2 - Ship stat - Control
+    {	0   ,	396	,	152	,	36	}, // 3 - Ship stat - Speed
+    {	0   ,	432	,	152	,	36	}, // 4 - Ship stat - Shield
+    {	0   ,	469	,   550	,	143	}, // 5 - Ship class "Squall"
+    {	0	,	612	,	550	,	143	}, // 6 - Ship class "Tempest"
+    {	0	,	755	,	550	,	143	}, // 7 - Ship class "Blizzard"
+    {	0	,	898	,   550	,	143	}, // 8 - Ship class "Typhoon"
+    {	0	,	1041,	720	,	160	}, // 9 - Ship class "Hurricane"
+    //{	0	,	960	,	720	,	160	} // 10 - Ship class "Hurricane"
+    // {	0	,	320	,	550	,	143	}, // 6 - Troposphere
+    // {	0	,	480	,	550	,	143	}, // 7 - Stratosphere
+    // {	0	,	640	,   550	,	143	}, // 8 - Mesosphere
+    // {	0	,	800	,	720	,	160	}, // 9 - Thermosphere
+    // {	0	,	960	,	720	,	160	} // 10 - Exosphere
+};
+
+Sprite numberFont300;
+S2D_Sprite *numberFont300img;
+double nf300Sheet[10][4] = {
+    {	0	,	0	,	170	,	250	},
+    {	180	,	0	,   170	,	250	},
+    {	360	,	0	,	170	,	250	},
+    {	540	,	0	,	170	,	250	},
+    {	720	,   0	,	170	,	250	},
+    {	900	,	0	,	170	,	250	},
+    {	1080,	0	,	170	,	250	},
+    {   1260,	0	,	170	,	250	},
+    {	1440,	0	,	170	,	250	},
+    {	1620,	0	,	170	,	250  }
 };
 
 void defineImages() {
     #ifdef ROTATE
         numberFont80img = S2D_CreateSprite("number_font_80px_v.png");
+        numberFont300img = S2D_CreateSprite("number_font_300px_v.png");
     #else
         numberFont80img = S2D_CreateSprite("number_font_80px.png");
+        numberFont300img = S2D_CreateSprite("number_font_300px.png");
     #endif
     numberFont80img->x = 65;
     numberFont80img->y = 65;
@@ -55,6 +93,14 @@ void defineImages() {
     numberFont80.sheet = &nf80Sheet[0];
     numberFont80.width = 650;
     numberFont80.height = 65;
+
+    numberFont300img->x = 65;
+    numberFont300img->y = 65;
+    numberFont300.spr = numberFont300img;
+    numberFont300.frames = 10;
+    numberFont300.sheet = &nf300Sheet[0];
+    numberFont300.width = 1800;
+    numberFont300.height = 250;
 
     #ifdef ROTATE
         gameImg = S2D_CreateSprite("game_sheet_v.png");

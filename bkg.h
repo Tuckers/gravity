@@ -6,7 +6,7 @@
 ////// BACKGROUND //////
 
 S2D_Color black = {.r = 0.0, .g = 0.0, .b = 0.0, .a = 1.0};
-S2D_Color darkBlue = {.r = 0.1216,.g = 0.4157,.b = 0.6588};
+//S2D_Color darkBlue = {.r = 0.1216,.g = 0.4157,.b = 0.6588};
 
 typedef struct BKG {
     S2D_Color *color1;

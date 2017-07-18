@@ -94,153 +94,13 @@ void defineGameLevels() {
 }
 
 Game game = {
-    .gameMode = 5,
+    .gameMode = 2,
     .gameOver = false,
     .altitude = 500000,
     .level = 0,
     .players = 2,
     .levels = &gameLevels[0],
 };
-
-void updateCapsule(Capsule *cap){
-    // Check for player input
-    //printf("Player 1 left = %s \n", player1->left ? "true" : "false");
-    //printf("Player 1 right = %s \n", player1->right ? "true" : "false");
-    Level currentLevel = game.levels[game.level];
-
-    // Braking
-    if (cap->player->left == true && cap->player->right == true){
-        if (cap->braking == false){
-            cap->preDriftY = cap->driftY;
-            cap->braking = true;
-        }
-        // If braking, slow capsule and add heat
-        cap->driftY = cap->driftY - 1;
-        cap->heat = cap->heat + 1;
-        cap->velY = cap->velY - 0.1;
-        if (cap->heat > 100){
-            cap->heat = 100;
-        }
-        if (cap->driftY < -cap->maxY){
-            cap->driftY = -cap->maxY;
-        }
-        if (cap->velY < 0){
-            cap->velY = 0;
-        }
-        braking = true;
-    }
-    else {
-        // If not braking, resume previous speed and reduce heat
-        cap->braking = false;
-        cap->heat--;
-        cap->velY = cap->velY + 0.01;
-        if (cap->heat < 0){
-            cap->heat = 0;
-        }
-        if (cap->driftY < cap->preDriftY){
-            cap->driftY = cap->driftY + 0.5;
-        }
-        if (cap->velY > currentLevel.maxSpeed){
-            cap->velY = 10;
-        }
-        braking = false;
-    }
-    // Invert player movement if vertical orientation
-    // Update capsule velocity based on player input
-    if (orientation == 1){
-        if (cap->player->right == true){
-            cap->velX = cap->velX - 1;
-            if (cap->velX < -cap->maxX){
-                cap->velX = -cap->maxX;
-            }
-        }
-        if (cap->player->left == true){
-            cap->velX = cap->velX + 1;
-            if (cap->velX > cap->maxX){
-                cap->velX = cap->maxX;
-            }
-        }
-    }
-    // Update capsule velocity based on player input
-    else {
-        if (cap->player->right == true){
-            cap->velX = cap->velX + 1;
-            if (cap->velX > cap->maxX){
-                cap->velX = cap->maxX;
-            }
-        }
-        if (cap->player->left == true){
-            cap->velX = cap->velX - 1;
-            if (cap->velX < -cap->maxX){
-                cap->velX = -cap->maxX;
-            }
-        }
-    }
-    // Add friction quotiant to slow movement
-    cap->velX *= friction;
-    // Temp variables to hold velocity + current location
-    float x = cap->x + cap->velX;
-    float y = cap->y + cap->driftY;
-    // If new x is outside field of play, bring it in, kill excess velocity (improves responsiveness)
-    if ((x + cap->width) > nomScreenWidth){
-        x = nomScreenWidth - cap->width;
-        cap->velX = 0;
-    }
-    else if (x < 0) {
-        x = 0;
-        cap->velX = 0;
-    }
-    // If new y is outside field of play, bring it in.
-    if ((y + cap->height) > nomScreenHeight - 500){
-        y = nomScreenHeight - cap->height - 500;
-    }
-    else if (y < 100) {
-        y = 100;
-    }
-    // Update capsule values to reflect temp values
-    cap->x = x;
-    cap->y = y;
-    // If velocity is close to zero, make it zero.
-    if (cap->velX < 0.1 && cap->velX > -0.1){
-        cap->velX = 0;
-    }
-}
-
-void drawCapsule(Capsule *cap){
-    // Color change for heat buildup.
-    // float r = (1.0 - cap->color->r / 100) * cap->heat;
-    // float g = (0.0 - cap->color->g / 100) * cap->heat;
-    // float b = (0.0 - cap->color->b / 100) * cap->heat;
-    // S2D_Color colorTemp = {.r = r + cap->color->r, .g = g + cap->color->g, .b = b + cap->color->b, .a = cap->color->a};
-    // Draw the capsule at the updated location rotation function.
-    #ifdef ROTATE
-        cap->spr->x = cap->y;
-        cap->spr->y = cap->x;
-    #else
-        cap->spr->x = cap->x;
-        cap->spr->y = cap->y;
-    #endif
-    // Draw left movement sprite
-    if (cap->heat > 1){
-        int frame = (cap->heat * cap->brake->frames / 100);
-        drawSprite(cap->spr, cap->brake, frame);
-    }
-    else if (cap->velX < -0.5){
-        int frame = (-cap->velX * cap->left->frames / cap->maxX);
-        drawSprite(cap->spr, cap->left, frame);
-    }
-    else if (cap->velX > 0.5){
-        int frame = (cap->velX * cap->right->frames / cap->maxX);
-        drawSprite(cap->spr, cap->right, frame);
-    }
-    else {
-        if (cap->down->currentFrame > cap->down->frames){
-            cap->down->currentFrame = 0;
-        }
-        drawSprite(cap->spr, cap->down, cap->down->currentFrame);
-        cap->down->currentFrame++;
-    }
-}
 
 /////////// KEYBOARD INPUT //////////
 void on_key(S2D_Event e) {
@@ -304,8 +164,6 @@ typedef struct Selector {
     bool p2Selected;
 } Selector;
 
-
-
 ////////// PLAYER SELECTION //////////
 Selector playerSelect = {
     .arrived = false,
@@ -348,26 +206,36 @@ void updatePlayerSelect (Player *player, Selector *selector){
 }
 
 void drawPlayerSelect(Selector *selector){
+    drawRectangle(0,0, nomScreenWidth, nomScreenHeight, &darkBlue);
     if (selector->timeRemaining < 10){
-        drawNumber(&numberFont80, 0, 482, 1675);
-        drawNumber(&numberFont80, selector->timeRemaining, 533, 1675);
+        drawNumber(&numberFont300, 0, 40, 1340);
+        drawNumber(&numberFont300, selector->timeRemaining, 210, 1340);
     }
     else {
-        drawNumber(&numberFont80, 1, 482, 1675);
-        drawNumber(&numberFont80, 0, 533, 1675);
+        drawNumber(&numberFont300, 1, 70, 1340);
+        drawNumber(&numberFont300, 0, 210, 1340);
     }
     if (selector->p1Selection == 1){
-        onePAni.frame = 0;
-        twoPAni.frame = 1;
+        drawRectangle(40, 40, 500, 1242, &blue);
+        drawPolygon(&psPlayer1[0], 6, &white, false);
+        drawPolygon(&psPlayer2a[0], 6, &white, true);
+        drawPolygon(&psPlayer2b[0], 6, &white, true);
+        //drawTriangle(&psPlayer1[0], &psPlayer1[1], &psPlayer1[2], &white);
+        //onePAni.frame = 0;
+        //twoPAni.frame = 1;
     }
     if (selector->p1Selection == 2){
+        drawRectangle(540, 40, 500, 1242, &blue);
+        drawPolygon(&psPlayer1[0], 6, &white, true);
+        drawPolygon(&psPlayer2a[0], 6, &white, false);
+        drawPolygon(&psPlayer2b[0], 6, &white, false);
         onePAni.frame = 1;
         twoPAni.frame = 0;
     }
-
-    drawSprite2(&gameSprite, &onePAni, 215, 500);
-    drawSprite2(&gameSprite, &twoPAni, 540, 500);
-    drawSprite2(&gameSprite, &titlePlayerSelect, 180, 180);
+    drawRectangle(40, 1282, nomScreenWidth - 80, 16, &yellow);
+    //drawSprite2(&gameSprite, &onePAni, 215, 500);
+    //drawSprite2(&gameSprite, &twoPAni, 540, 500);
+    drawSprite2(&gameSprite, &titlePlayerSelect, 65, 1604);
 
 }
 
@@ -444,9 +312,6 @@ void drawShipSelect(Player *p1, Player *p2, Selector *selector){
 
 }
 
-
-
-
 /////////// GAME //////////
 // UPDATE ALL PLAY PARAMETERS
 float deg = 0.1;
@@ -455,7 +320,7 @@ void update() {
         case 1: //Looping display
             break;
         case 2: //Player # selection
-            updatePlayerSelect(&player1,&playerSelect);
+            updatePlayerSelect(&player1, &playerSelect);
             break;
         case 3: //Ship selection
             updateShipSelect(&player1, &player2, &shipSelect);
@@ -536,7 +401,6 @@ int main() {
     defineColors();
     if (setupDefined == false) {
         defineImages();
-        defineCapsuleSpr();
         defineGameLevels();
         setupDefined = true;
     }
