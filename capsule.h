@@ -4,6 +4,16 @@
 #ifndef CAPSULE_H
 #define CAPSULE_H
 
+typedef struct Ship {
+    Point (*shipPoints);
+    int shipSize;
+    float speed;
+    float shield;
+    float control;
+    Animation *title;
+    Animation *big;
+} Ship;
+
 typedef struct Capsule {
     int width;
     int height;
@@ -24,6 +34,7 @@ typedef struct Capsule {
     bool passTail;
     bool hollow;
     int shipSize;
+    Ship *ship;
     struct Point *points[10];
     struct Point *transPoints[10];
     S2D_Color *color;
@@ -35,15 +46,7 @@ typedef struct Capsule {
     Movement *brake;
 } Capsule;
 
-Point capPoints[6];
-
-Point capTransPoints[6] = {{ .x = -20, .y = -30}, { .x = 20, .y = -30}, { .x = 0, .y = 30},
-                            { .x = -15, .y = -26}, { .x = 15, .y = -26}, { .x = 0, .y = 17}};
-
-
-
-
-Capsule capNew = {
+Capsule capsule1 = {
     .width = 50,
     .height = 60,
     .x = 0,
@@ -71,7 +74,7 @@ Capsule capNew = {
     .brake = &capBrake
 };
 
-Capsule capNew2 = {
+Capsule capsule2 = {
     .width = 50,
     .height = 60,
     .x = nomScreenWidth - 100,
@@ -126,6 +129,56 @@ Point shipFive[10] = {
     {.x = -15, .y = -25}, {.x = 15, .y = -25}, {.x = 15, .y = -2}, {.x = 0, .y = 21}, {.x = -15, .y = -2}
 };
 
+Ship ship1 = {
+    .shipPoints = shipOne,
+    .shipSize = 6,
+    .speed = 1,
+    .shield = .3,
+    .control = .6,
+    .title = &shipSquall,
+    .big = &bgShip1
+};
+
+Ship ship2 = {
+    .shipPoints = shipTwo,
+    .shipSize = 10,
+    .speed = .7,
+    .shield = .4,
+    .control = .8,
+    .title = &shipTempest,
+    .big = &bgShip2
+};
+
+Ship ship3 = {
+    .shipPoints = shipThree,
+    .shipSize = 10,
+    .speed = .2,
+    .shield = 1,
+    .control = .5,
+    .title = &shipBlizzard,
+    .big = &bgShip3
+};
+
+Ship ship4 = {
+    .shipPoints = shipFour,
+    .shipSize = 10,
+    .speed = .3,
+    .shield = .6,
+    .control = 1,
+    .title = &shipTyphoon,
+    .big = &bgShip4
+};
+
+Ship ship5 = {
+    .shipPoints = shipFive,
+    .shipSize = 10,
+    .speed = .6,
+    .shield = .5,
+    .control = .5,
+    .title = &shipHurricane,
+    .big = &bgShip5
+};
+
 ///// SHIP STORAGE /////
 
 Point cpA1[10];
@@ -133,10 +186,11 @@ Point cpT1[10];
 Point cpA2[10];
 Point cpT2[10];
 
-void generateCapPoints(Capsule *cap, Point cpArray[10], Point cpTransArray[10], Point shipPoints[10], int shipSize, bool hollow){
+void generateCapPoints(Capsule *cap, Point cpArray[10], Point cpTransArray[10], int shipSize, bool hollow){
+    //Point shipPoints[10] = cap->ship->shipPoints;
     for (int i=0; i<shipSize; i++){
-        cpArray[i] = shipPoints[i];
-        cpTransArray[i] = shipPoints[i];
+        cpArray[i] = cap->ship->shipPoints[i];
+        cpTransArray[i] = cap->ship->shipPoints[i];
         cap->points[i] = &cpArray[i];
         cap->transPoints[i] = &cpTransArray[i];
         cap->shipSize = shipSize;
@@ -349,6 +403,36 @@ void updateShip(Capsule *cap){
         cap->velX = 0;
     }
     rotateShip(cap, (-cap->velX / 50));
+}
+
+typedef struct Particle {
+    int x;
+    int y;
+    int size;
+    float velX;
+    float velY;
+    int life;
+    float multi;
+} Particle;
+
+typedef struct Explosion {
+    int x;
+    int y;
+    int starSize;
+    float maxVelX;
+    float maxVelY;
+    int maxLife;
+    int magnitude;
+    int particles;
+    Particle (*part);
+} Ship;
+
+void explode(Explosion *expl, int x, int y){
+    for (int i = 0; i < exp->particles)
+    part->velY *= multi
+    part->x += part->velX;
+    part->y += part->velY;
+
 }
 
 #endif /* CAPSULE_H */

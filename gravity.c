@@ -113,7 +113,7 @@ void on_key(S2D_Event e) {
         if(strcmp(e.key, "Right") == 0){
             player1.right = true;
             //printf("Player 1 right = %s \n", player1.left ? "true" : "false");
-        }
+        } 
         if(strcmp(e.key, "A") == 0){
             player2.left = true;
             //printf("Player 1 left = %s \n", player1.left ? "true" : "false");
@@ -157,6 +157,8 @@ typedef struct Selector {
     int items;
     int p1Selection;
     int p2Selection;
+    int p1LastMoved;
+    int p2LastMoved;
     int timeLimit;
     int timeRemaining;
     int count;
@@ -185,6 +187,7 @@ void updatePlayerSelect (Player *player, Selector *selector){
             selector->timeRemaining--;
             if (selector->timeRemaining < 0){
                 selector->p1Selected = true;
+                game.gameMode = 3;
             }
         }
         if (selector->p1Selection == 1){ // 1 player selected
@@ -232,9 +235,7 @@ void drawPlayerSelect(Selector *selector){
         onePAni.frame = 1;
         twoPAni.frame = 0;
     }
-    drawRectangle(40, 1282, nomScreenWidth - 80, 16, &yellow);
-    //drawSprite2(&gameSprite, &onePAni, 215, 500);
-    //drawSprite2(&gameSprite, &twoPAni, 540, 500);
+    drawRectangle(40, 1282, nomScreenWidth - 80, 8, &yellow);
     drawSprite2(&gameSprite, &titlePlayerSelect, 65, 1604);
 
 }
@@ -242,16 +243,17 @@ void drawPlayerSelect(Selector *selector){
 ////////// SHIP SELECTION //////////
 Selector shipSelect = {
     .arrived = false,
-    .items = 2,
+    .items = 5,
     .p1Selection = 1,
     .p2Selection = 1,
     .timeLimit = 10,
     .timeRemaining = 10,
     .count = 0,
-    .p1Selected = false
+    .p1Selected = false,
+    .p2Selected = false
 };
 
-void updateShipSelect (Player *p1, Player *p2, Selector *selector){
+void updateShipSelect (Selector *selector){
     if (selector->p1Selected == true && selector->p2Selected == true){
         game.gameMode = 5;
     }
@@ -262,53 +264,121 @@ void updateShipSelect (Player *p1, Player *p2, Selector *selector){
             if (selector->timeRemaining < 0){
                 selector->p1Selected = true;
                 selector->p2Selected = true;
+                game.gameMode = 5;
             }
         }
-
-        ///// New Code to Evalate /////
-        p1->ship = selector->p1Selection; //set current selection
-        p2->ship = selector->p2Selection;
-        if (p1->left == false && p1->right == true){ //what if right?
-            selector->p1Selection++;
-            if (selector->p1Selection > selector->items){
-                selector->p1Selection = 1;
-            }
-        }
-        else if (p1->left == true && p1->right == false){ //what if left?
-            selector->p1Selection--;
-            if (selector->p1Selection < 1){
-                selector->p1Selection = selector->items;
-            }
-        }
-        else if (p1->left == true && p1->right == true){ //what if select?
-            selector->p1Selected = true;
-        }
-
-        /////////////
     }
 }
 
-void drawShipSelect(Player *p1, Player *p2, Selector *selector){
-    if (selector->timeRemaining < 10){
-        drawNumber(&numberFont80, 0, 482, 1675);
-        drawNumber(&numberFont80, selector->timeRemaining, 533, 1675);
+void capsuleSelect (Capsule *cap, Selector *selector){
+    int selection;
+    if (cap->player->number == 1){
+        if ((selector->count - selector->p1LastMoved) > 5){
+            selector->p1LastMoved = selector->count;
+            if (cap->player->left == false && cap->player->right == true){ //what if right?
+                selector->p1Selection++;
+                if (selector->p1Selection > selector->items){
+                    selector->p1Selection = selector->items;
+                }
+            }
+            else if (cap->player->left == true && cap->player->right == false){ //what if left?
+                selector->p1Selection--;
+                if (selector->p1Selection < 1){
+                    selector->p1Selection = 1;
+                }
+            }
+            else if (cap->player->left == true && cap->player->right == true){ //what if select?
+                selector->p1Selected = true;
+            }
+        }
+        selection = selector->p1Selection;
     }
     else {
-        drawNumber(&numberFont80, 1, 482, 1675);
-        drawNumber(&numberFont80, 0, 533, 1675);
+        if ((selector->count - selector->p2LastMoved) > 5){
+            selector->p2LastMoved = selector->count;
+            if (cap->player->left == false && cap->player->right == true){ //what if right?
+                selector->p2Selection++;
+                if (selector->p2Selection > selector->items){
+                    selector->p2Selection = selector->items;
+                }
+            }
+            else if (cap->player->left == true && cap->player->right == false){ //what if left?
+                selector->p2Selection--;
+                if (selector->p2Selection < 1){
+                    selector->p2Selection = 1;
+                }
+            }
+            else if (cap->player->left == true && cap->player->right == true){ //what if select?
+                selector->p2Selected = true;
+            }
+        }
+        selection = selector->p2Selection;
     }
-    if (selector->p1Selection == 1){
-        onePAni.frame = 0;
-        twoPAni.frame = 1;
+    switch(selection){
+        case 1:
+            shipList.first = 10;
+            cap->ship = &ship1;
+            break;
+        case 2:
+            shipList.first = 11;
+            cap->ship = &ship2;
+            break;
+        case 3:
+            shipList.first = 12;
+            cap->ship = &ship3;
+            break;
+        case 4:
+            shipList.first = 13;
+            cap->ship = &ship4;
+            break;
+        case 5:
+            shipList.first = 14;
+            cap->ship = &ship5;
+            break;
     }
-    if (selector->p1Selection == 2){
-        onePAni.frame = 1;
-        twoPAni.frame = 0;
-    }
+}
 
-    //drawSprite2(&gameSprite, &onePAni, 215, 500);
-    //drawSprite2(&gameSprite, &twoPAni, 540, 500);
-    drawSprite2(&gameSprite, &titleShipSelect, 180, 180);
+void drawStats(Ship *ship){
+    drawSprite2(&gameSprite, &shipSpeed, 667, 574);
+    drawBar(667, 620, 260, 24, ship->speed, &blue);
+    drawSprite2(&gameSprite, &shipShield, 667, 684);
+    drawBar(667, 730, 260, 24, ship->shield, &blue2);
+    drawSprite2(&gameSprite, &shipControl, 667, 794);
+    drawBar(667, 840, 260, 24, ship->control, &blue3);
+    drawSprite2(&gameSprite, ship->title, 265, 203);
+    drawSprite2(&gameSprite, ship->big, 120, 520);
+}
+
+void drawShipSelect(Selector *selector){
+    drawRectangle(0,0, nomScreenWidth, nomScreenHeight, &darkBlue);
+    if (selector->timeRemaining < 10){
+        drawNumber(&numberFont300, 0, 700, 1618);
+        drawNumber(&numberFont300, selector->timeRemaining, 870, 1618);
+    }
+    else {
+        drawNumber(&numberFont300, 1, 730, 1618);
+        drawNumber(&numberFont300, 0, 870, 1618);
+    }
+    switch(selector->p1Selection){
+        case 1:
+            drawStats(&ship1);
+            break;
+        case 2:
+            drawStats(&ship2);
+            break;
+        case 3:
+            drawStats(&ship3);
+            break;
+        case 4:
+            drawStats(&ship4);
+            break;
+        case 5:
+            drawStats(&ship5);
+            break;
+    }
+    drawSprite2(&gameSprite, &shipList, 208, 1228);
+    drawRectangle(40, 1565, nomScreenWidth - 80, 8, &yellow);
+    drawSprite2(&gameSprite, &titleShipSelect, 40, 1613);
 
 }
 
@@ -323,7 +393,11 @@ void update() {
             updatePlayerSelect(&player1, &playerSelect);
             break;
         case 3: //Ship selection
-            updateShipSelect(&player1, &player2, &shipSelect);
+            updateShipSelect(&shipSelect);
+            capsuleSelect(&capsule1, &shipSelect);
+            if (game.players == 2){ // If two player update second capsule selection
+                capsuleSelect(&capsule2, &shipSelect);
+            }
             break;
         case 4: //Introduction
             if (firstTime == false){
@@ -334,28 +408,21 @@ void update() {
             updateBKG(&background);
             break;
         case 5: //Gameplay
-            if (firstTime == false){
+            if (firstTime == true){
                 generateRings(&rm1);
-                generateCapPoints(&capNew, cpA1, cpT1, shipFive, 10, false);
-                generateCapPoints(&capNew2, cpA2, cpT2, shipFive, 10, true);
-                //generateCapPoints(&capNew, cpA1, cpT1);
-                //generateCapPoints(&capNew2, cpA2, cpT2);
-                firstTime = true;
+                generateCapPoints(&capsule1, cpA1, cpT1, 10, false);
+                if (game.players == 2){ // If two player generate extra cap points
+                    generateCapPoints(&capsule2, cpA2, cpT2, 10, true);
+                }
+                firstTime = false;
             }
             updateRingmaster(&rm1);
-            updateShip(&capNew);
-            updateShip(&capNew2);
-            checkHit(&rm1, &capNew);
-            checkHit(&rm1, &capNew2);
-            //rotateShip(&capNew, deg);
-            // updateCapsule(&capsule1);
-
-            // updateBKG(&background);
-            // //updateRingmaster(&ringmaster1);
-            // if (game.players == 2){
-            //     updateCapsule(&capsule2);
-            //     //updateRingmaster(&ringmaster2);
-            // }
+            updateShip(&capsule1);
+            checkHit(&rm1, &capsule1);
+            if (game.players == 2){ // If two player update capsule 2 and check for hits
+                updateShip(&capsule2);
+                checkHit(&rm1, &capsule2);
+            }
             break;
     }
 }
@@ -369,7 +436,7 @@ void render() {
             drawPlayerSelect(&playerSelect);
             break;
         case 3: //Ship selection
-            drawShipSelect(&player1, &player2, &shipSelect);
+            drawShipSelect(&shipSelect);
             break;
         case 4: //Introduction
             //drawBKG(&background);
@@ -377,20 +444,15 @@ void render() {
             //drawRingDemo(&rm1, &ringTest);
             break;
         case 5: //Gameplay
-            drawRingmaster(&rm1);
-            drawShip(&capNew);
-            drawShip(&capNew2);
-            //drawBkg(&capsule1, &capsule2);
-            drawNumber(&numberFont80, player1.score, 100, 100);
-            drawNumber(&numberFont80, player2.score, nomScreenWidth - 200, 100);
-            // drawCapsule(&capsule1);
-            // drawBKG(&background);
-
-            // //drawRingmaster(&ringmaster1);
-            // if (game.players == 2){
-            //     drawCapsule(&capsule2);
-            //     //drawRingmaster(&ringmaster2);
-            // }
+            if (firstTime == false){
+                drawRingmaster(&rm1);
+                drawShip(&capsule1);
+                drawNumber(&numberFont80, player1.score, 100, 100);
+                if (game.players == 2){
+                    drawShip(&capsule2);
+                    drawNumber(&numberFont80, player2.score, nomScreenWidth - 200, 100);
+                }
+            }
             break;
 
     }

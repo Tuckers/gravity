@@ -2,7 +2,7 @@
 #define GAMEDEF_H
 
 // Define to enable 90degree rotation.
-#define ROTATE
+//#define ROTATE
 
 #define capsuleHeight 100
 #define capsuleWidth 100
@@ -30,7 +30,7 @@ float friction = 0.98;
 float entropy = 0.8;
 bool braking = false;
 
-int firstTime = false;
+bool firstTime = true;
 
 typedef struct Point{
     int x;
@@ -51,30 +51,34 @@ typedef struct Level {
 } Level;
 
 
-
 // PLAYERS
 typedef struct Player {
     char name[50];
     int score;
+    int shipType;
     bool left;
     bool right;
+    int number;
     S2D_Image *image;
-    int ship;
 } Player;
 
 Player player1 = {
     .name = "Player 1",
     .score = 0,
     .left = false,
-    .right = false
+    .right = false,
+    .number = 1
 };
 
 Player player2 = {
     .name = "Player 2",
     .score = 0,
     .left = false,
-    .right = false
+    .right = false,
+    .number = 2
 };
+
+
 
 
 #endif /* GAMEDEF_H */

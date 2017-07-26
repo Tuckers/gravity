@@ -44,7 +44,7 @@ double nf80Sheet[10][4] = {
 
 Sprite gameSprite;
 S2D_Sprite *gameImg;
-double gameSheet[10][4] = {
+double gameSheet[20][4] = {
     {	0	,	0	,	280	,	180	}, // 0 - Select players
     {	0	,	180	,   280	,	180	}, // 1 - Select your ship
     {	0	,	360	,   152	,	36	}, // 2 - Ship stat - Control
@@ -54,14 +54,25 @@ double gameSheet[10][4] = {
     {	0	,	612	,	550	,	143	}, // 6 - Ship class "Tempest"
     {	0	,	755	,	550	,	143	}, // 7 - Ship class "Blizzard"
     {	0	,	898	,   550	,	143	}, // 8 - Ship class "Typhoon"
-    {	0	,	1041,	720	,	160	}, // 9 - Ship class "Hurricane"
-    //{	0	,	960	,	720	,	160	} // 10 - Ship class "Hurricane"
+    {	0	,	1041,	720	,	143	}, // 9 - Ship class "Hurricane"
+    {	0	,	1184,	664	,	132	}, // 10 - Select ship 1
+    {	0	,	1325,	664	,	132	}, // 11 - Select ship 2
+    {	0	,	1466,	664	,	132	}, // 12 - Select ship 3
+    {	0	,	1607,	664	,	132	}, // 13 - Select ship 4
+    {	0	,	1748,	664	,	132	}, //  14 - Select ship 5
+    {	1557,	587 ,	450	,	540	}, //  15 - Select ship big 1
+    {	902	,	0   ,	450	,	540	}, //  16 - Select ship big 2
+    {	574	,	587 ,	450	,	540	}, //  17 - Select ship big 3
+    {	1076,	587 ,	450	,	540	}, //  18 - Select ship big 4
+    {	1377,	0   ,	450	,	540	} //  19 - Select ship big 5
+};
+
     // {	0	,	320	,	550	,	143	}, // 6 - Troposphere
     // {	0	,	480	,	550	,	143	}, // 7 - Stratosphere
     // {	0	,	640	,   550	,	143	}, // 8 - Mesosphere
     // {	0	,	800	,	720	,	160	}, // 9 - Thermosphere
     // {	0	,	960	,	720	,	160	} // 10 - Exosphere
-};
+
 
 Sprite numberFont300;
 S2D_Sprite *numberFont300img;
@@ -163,10 +174,98 @@ typedef struct Animation {
     int last;
 } Animation;
 
+Animation bgShip1 = {
+    .frame = 0,
+    .first = 17,
+    .last = 17
+};
+
+Animation bgShip2 = {
+    .frame = 0,
+    .first = 16,
+    .last = 16
+};
+
+Animation bgShip3 = {
+    .frame = 0,
+    .first = 18,
+    .last = 18
+};
+
+Animation bgShip4 = {
+    .frame = 0,
+    .first = 15,
+    .last = 15
+};
+
+Animation bgShip5 = {
+    .frame = 0,
+    .first = 19,
+    .last = 19
+};
+
 Animation titlePlayerSelect = {
     .frame = 0,
     .first = 0,
     .last = 0
+};
+
+Animation shipSquall = {
+    .frame = 0,
+    .first = 5,
+    .last = 5
+};
+
+Animation shipList = {
+    .frame = 0,
+    .first = 10,
+    .last = 14
+};
+
+Animation shipTempest = {
+    .frame = 0,
+    .first = 6,
+    .last = 6
+};
+
+Animation shipClass = {
+    .frame = 0,
+    .first = 5,
+    .last = 9
+};
+
+Animation shipBlizzard = {
+    .frame = 0,
+    .first = 7,
+    .last = 7
+};
+
+Animation shipTyphoon = {
+    .frame = 0,
+    .first = 8,
+    .last = 8
+};
+
+Animation shipHurricane = {
+    .frame = 0,
+    .first = 9,
+    .last = 9
+};
+
+Animation shipSpeed = {
+    .frame = 0,
+    .first = 3,
+    .last = 3
+};
+Animation shipShield = {
+    .frame = 0,
+    .first = 4,
+    .last = 4
+};
+Animation shipControl = {
+    .frame = 0,
+    .first = 2,
+    .last = 2
 };
 
 Animation titleShipSelect = {
