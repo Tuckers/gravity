@@ -13,6 +13,7 @@ S2D_Color blue3 = {.r = 0.5843, .g = 0.8784, .b = 0.9647, .a = 1.0};
 S2D_Color yellow = {.r = 0.9607, .g = 0.9019, .b = 0.0, .a = 1.0};
 S2D_Color ringColor = {.r = 1.0, .g = 0.0, .b = 0.0, .a = 1.0};
 S2D_Color darkBlue = {.r = 0.0509, .g = 0.1490, .b = 0.2667, .a = 1.0};
+S2D_Color partColor = {.r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0};
 S2D_Color lightBlue;
 S2D_Color lightGreen;
 

@@ -1,6 +1,7 @@
 #include "gameDef.h"
 #include "color.h"
 #include "drawing.h"
+#include "particle.h"
 #ifndef CAPSULE_H
 #define CAPSULE_H
 
@@ -275,29 +276,32 @@ void rotateShip(Capsule *cap, float degrees){
 
 void drawShip(Capsule *cap){
     int shipSize = cap->shipSize / 2;
-    //int shipSize = sizeof(cap->transPoints) / sizeof(cap->transPoints[0]) / 2;
-    //int shipSize = 6;
-    if (cap->hollow == true){
-        ///// HOLLOW RENDERING /////
-        for (int i = 0; i < shipSize; i++){
-            if (i == shipSize - 1){
-                drawTriangle(cap->transPoints[i], cap->transPoints[0], cap->transPoints[(i + shipSize)], cap->color);
-                drawTriangle(cap->transPoints[(i + shipSize)], cap->transPoints[0], cap->transPoints[(0 + shipSize)], cap->color);
-            }
-            else {
-                drawTriangle(cap->transPoints[i], cap->transPoints[(i + 1)], cap->transPoints[(i + shipSize)], cap->color);
-                drawTriangle(cap->transPoints[(i + shipSize)], cap->transPoints[(i + 1)], cap->transPoints[(i + 1 + shipSize)], cap->color);
-            }
-        }
+    if (cap->heat == 100){
+        drawParticles(&kaboom);
     }
     else {
-        ///// SOLID RENDERING /////
-        if (shipSize == 3){
-            drawTriangle(cap->transPoints[0], cap->transPoints[1], cap->transPoints[2], cap->color);
+        if (cap->hollow == true){
+            ///// HOLLOW RENDERING /////
+            for (int i = 0; i < shipSize; i++){
+                if (i == shipSize - 1){
+                    drawTriangle(cap->transPoints[i], cap->transPoints[0], cap->transPoints[(i + shipSize)], cap->color);
+                    drawTriangle(cap->transPoints[(i + shipSize)], cap->transPoints[0], cap->transPoints[(0 + shipSize)], cap->color);
+                }
+                else {
+                    drawTriangle(cap->transPoints[i], cap->transPoints[(i + 1)], cap->transPoints[(i + shipSize)], cap->color);
+                    drawTriangle(cap->transPoints[(i + shipSize)], cap->transPoints[(i + 1)], cap->transPoints[(i + 1 + shipSize)], cap->color);
+                }
+            }
         }
         else {
-            drawTriangle(cap->transPoints[4], cap->transPoints[2], cap->transPoints[3], cap->color);
-            drawQuad(cap->transPoints[0], cap->transPoints[1], cap->transPoints[2], cap->transPoints[4], cap->color);
+            ///// SOLID RENDERING /////
+            if (shipSize == 3){
+                drawTriangle(cap->transPoints[0], cap->transPoints[1], cap->transPoints[2], cap->color);
+            }
+            else {
+                drawTriangle(cap->transPoints[4], cap->transPoints[2], cap->transPoints[3], cap->color);
+                drawQuad(cap->transPoints[0], cap->transPoints[1], cap->transPoints[2], cap->transPoints[4], cap->color);
+            }
         }
     }
 }
@@ -314,7 +318,7 @@ void updateShip(Capsule *cap){
         }
         // If braking, slow capsule and add heat
         cap->driftY = cap->driftY - 1;
-        cap->heat = cap->heat + 1;
+        cap->heat += 1;
         cap->velY = cap->velY - 0.1;
         if (cap->heat > 100){
             cap->heat = 100;
@@ -403,36 +407,6 @@ void updateShip(Capsule *cap){
         cap->velX = 0;
     }
     rotateShip(cap, (-cap->velX / 50));
-}
-
-typedef struct Particle {
-    int x;
-    int y;
-    int size;
-    float velX;
-    float velY;
-    int life;
-    float multi;
-} Particle;
-
-typedef struct Explosion {
-    int x;
-    int y;
-    int starSize;
-    float maxVelX;
-    float maxVelY;
-    int maxLife;
-    int magnitude;
-    int particles;
-    Particle (*part);
-} Ship;
-
-void explode(Explosion *expl, int x, int y){
-    for (int i = 0; i < exp->particles)
-    part->velY *= multi
-    part->x += part->velX;
-    part->y += part->velY;
-
 }
 
 #endif /* CAPSULE_H */

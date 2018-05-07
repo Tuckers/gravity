@@ -5,6 +5,7 @@
 #include "bkg.h"
 #include "rings.h"
 #include "capsule.h"
+#include "particle.h"
 
 S2D_Window *window;
 
@@ -113,7 +114,7 @@ void on_key(S2D_Event e) {
         if(strcmp(e.key, "Right") == 0){
             player1.right = true;
             //printf("Player 1 right = %s \n", player1.left ? "true" : "false");
-        } 
+        }
         if(strcmp(e.key, "A") == 0){
             player2.left = true;
             //printf("Player 1 left = %s \n", player1.left ? "true" : "false");
@@ -171,8 +172,8 @@ Selector playerSelect = {
     .arrived = false,
     .items = 2,
     .p1Selection = 1,
-    .timeLimit = 10,
-    .timeRemaining = 10,
+    .timeLimit = 5,
+    .timeRemaining = 5,
     .count = 0,
     .p1Selected = false
 };
@@ -246,8 +247,8 @@ Selector shipSelect = {
     .items = 5,
     .p1Selection = 1,
     .p2Selection = 1,
-    .timeLimit = 10,
-    .timeRemaining = 10,
+    .timeLimit = 5,
+    .timeRemaining = 5,
     .count = 0,
     .p1Selected = false,
     .p2Selected = false
