@@ -448,14 +448,16 @@ void render() {
             if (firstTime == false){
                 drawRingmaster(&rm1);
                 drawShip(&capsule1);
-                drawNumber(&numberFont80, player1.score, 100, 100);
+                drawHeatBar(&capsule1, 40, nomScreenHeight - 154);
+                drawNumber(&numberFont50, player1.score, 40, nomScreenHeight - 88);
+                //drawNumber(&numberFont50, capsule1.heat, 40, nomScreenHeight - 48);
                 if (game.players == 2){
                     drawShip(&capsule2);
-                    drawNumber(&numberFont80, player2.score, nomScreenWidth - 200, 100);
+                    drawNumber(&numberFont50, player2.score, nomScreenWidth - 100, nomScreenHeight - 88);
+                    drawHeatBar(&capsule2, nomScreenWidth - 320, nomScreenHeight - 154);
                 }
             }
             break;
-
     }
 }
 
@@ -473,7 +475,7 @@ int main() {
     #ifdef ROTATE
         window = S2D_CreateWindow("Gravity", screenWidth, screenHeight, update, render, 0);
     #else
-        window = S2D_CreateWindow("Gravity", screenWidth, screenHeight, update, render, S2D_FULLSCREEN);
+        window = S2D_CreateWindow("Gravity", screenWidth, screenHeight, update, render, S2D_RESIZABLE);
     #endif
     // Temporary method for disabling cursor.
     SDL_ShowCursor(SDL_DISABLE);

@@ -306,6 +306,23 @@ void drawShip(Capsule *cap){
     }
 }
 
+void drawHeatBar(Capsule *cap, int x, int y){
+    float heatPercent = cap->heat / 100.00;
+    printf("Heat Percent = %f\n", heatPercent);
+    if (cap->heat < 1){
+      drawBar(x, y, 280, 40, 0, &green);
+    }
+    else if (cap->heat >= 1 && cap->heat < 50){
+      drawBar(x, y, 280, 40, heatPercent, &green);
+    }
+    else if (cap->heat >= 50 && cap->heat < 80){
+      drawBar(x, y, 280, 40, heatPercent, &yellow);
+    }
+    else {
+      drawBar(x, y, 280, 40, heatPercent, &red);
+    }
+}
+
 void updateShip(Capsule *cap){
     //Level currentLevel = game.levels[game.level];
 

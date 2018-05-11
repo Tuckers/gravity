@@ -11,20 +11,36 @@ typedef struct Sprite {
     int width;
 } Sprite;
 
+Sprite numberFont50;
+S2D_Sprite *numberFont50img;
+double nf50Sheet[10][4] = {
+    {	0	  , 0	,	48	,	48	},
+    {	46	,	0	, 48	,	48	},
+    {	92	,	0	,	48	,	48	},
+    {	138	,	0	,	48	,	48	},
+    {	184	, 0	,	48	,	48	},
+    {	230	,	0	,	48	,	48	},
+    {	276	,	0	,	48	,	48	},
+    { 322	,	0	,	48	,	48	},
+    {	368	,	0	,	48	,	48	},
+    { 414	,	0	,	48	,	48  }
+};
+
 Sprite numberFont80;
 S2D_Sprite *numberFont80img;
 double nf80Sheet[10][4] = {
-    {	0	,	0	,	65	,	65	},
-    {	65	,	0	,   65	,	65	},
+    {	0	  , 0	,	65	,	65	},
+    {	65	,	0	, 65	,	65	},
     {	130	,	0	,	65	,	65	},
     {	195	,	0	,	65	,	65	},
-    {	260	,   0	,	65	,	65	},
+    {	260	, 0	,	65	,	65	},
     {	325	,	0	,	65	,	65	},
     {	390	,	0	,	65	,	65	},
-    {   455	,	0	,	65	,	65	},
+    { 455	,	0	,	65	,	65	},
     {	520	,	0	,	65	,	65	},
     {	585	,	0	,	65	,	65  }
 };
+
 
 // Sprite gameSprite;
 // S2D_Sprite *gameImg;
@@ -91,12 +107,22 @@ double nf300Sheet[10][4] = {
 
 void defineImages() {
     #ifdef ROTATE
+        numberFont50img = S2D_CreateSprite("number_font_50px_v.png");
         numberFont80img = S2D_CreateSprite("number_font_80px_v.png");
         numberFont300img = S2D_CreateSprite("number_font_300px_v.png");
     #else
+        numberFont50img = S2D_CreateSprite("number_font_50px.png");
         numberFont80img = S2D_CreateSprite("number_font_80px.png");
         numberFont300img = S2D_CreateSprite("number_font_300px.png");
     #endif
+    numberFont50img->x = 48;
+    numberFont50img->y = 46;
+    numberFont50.spr = numberFont50img;
+    numberFont50.frames = 10;
+    numberFont50.sheet = &nf50Sheet[0];
+    numberFont50.width = 460;
+    numberFont50.height = 48;
+
     numberFont80img->x = 65;
     numberFont80img->y = 65;
     numberFont80.spr = numberFont80img;
