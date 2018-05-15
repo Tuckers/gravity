@@ -50,13 +50,13 @@ Ringmaster rm1 = {
 
 void generateRings(Ringmaster *rm){
     for (int i = 0; i <= 12; i++){
-        ringList[i].x = 0;
-        ringList[i].y = nomScreenHeight;
-        ringList[i].width = nomScreenWidth;
-        ringList[i].height = 180;
+        ringList[i].x = 40;
+        ringList[i].y = nomScreenHeight - 361;
+        ringList[i].width = nomScreenWidth - 80;
+        ringList[i].height = 120;
         ringList[i].color = &ringColor;
-        ringList[i].velY = 1;
-        ringList[i].split = (rand() % ((nomScreenWidth - rm->gapSize) + 1 ) + (rm->gapSize / 2));
+        ringList[i].velY = 0.1;
+        ringList[i].split = (rand() % ((nomScreenWidth - rm->gapSize - 80) + 1 ) + (rm->gapSize / 2));
         ringList[i].gap = 0;
         rm->rings[i] = &ringList[i];
     }
@@ -64,10 +64,10 @@ void generateRings(Ringmaster *rm){
 
 void reorderRingArray(Ringmaster *rm){
     Ring *ring = rm->rings[0];
-    ring->y = nomScreenHeight;
-    ring->height = 200;
+    ring->y = nomScreenHeight - 361;
+    ring->height = 120;
     ring->velY = 0.1;
-    ring->split = (rand() % ((nomScreenWidth - rm->gapSize) + 1 ) + (rm->gapSize/ 2));
+    ring->split = (rand() % ((nomScreenWidth - rm->gapSize - 80) + 1 ) + (rm->gapSize/ 2));
     ring->gap = 0;
     for (int i = 0; i < rm->numRings; i++){
         rm->rings[i] = rm->rings[i+1];
@@ -77,7 +77,7 @@ void reorderRingArray(Ringmaster *rm){
 
 void updateRingmaster(Ringmaster *rm){
     rm->count++; //Count between launches
-    if (rm->active <= rm->numRings  && rm->count > 60){ //When to launch new rings
+    if (rm->active <= rm->numRings  && rm->count > 40){ //When to launch new rings
         rm->active++;
         rm->count = 0;
     }
@@ -88,9 +88,18 @@ void updateRingmaster(Ringmaster *rm){
         }
         if (braking == true){
             ring->velY += (nomScreenHeight - (ring->y)) * -rm->acceleration;
+            if (ring->velY < 0.1){
+              ring->velY = 0.1;
+            }
         }
         else {
-            ring->velY += (nomScreenHeight - (ring->y)) * rm->acceleration;
+            if (ring->y > nomScreenHeight - 800){
+              //ring->velY += (nomScreenHeight - (ring->y)) * (rm->acceleration / 10);
+              ring->velY += (nomScreenHeight - (ring->y)) * rm->acceleration / 8;
+            }
+            else {
+              ring->velY += (nomScreenHeight - (ring->y)) * rm->acceleration / 8;
+          }
         }
         if (ring->velY > rm->maxY){
             ring->velY = rm->maxY;
@@ -152,8 +161,6 @@ void drawRing(Ring *ring){
     int width = ring->split - ring->gap / 2;
     int width2 = ring->width - (ring->split + ring->gap / 2);
     int height = ring->height;
-    int width3 = ring->gap;
-    int x3 = ring->split - ring->gap / 2;
     S2D_Color *color = ring->color;
     #ifdef ROTATE
         S2D_DrawQuad(
@@ -176,16 +183,6 @@ void drawRing(Ring *ring){
             // Lower left
             (y + height), (nomScreenWidth - x2), color->r, color->g, color->b, color->a
         );
-        // S2D_DrawQuad(
-        //     // Upper left
-        //     y, (nomScreenWidth - x3), color->r, color->g, color->b, color->a,
-        //     // Upper right
-        //     y, (nomScreenWidth - (x3 + width3)), color->r, color->g, color->b, color->a,
-        //     // Lower right
-        //     (y + height), (nomScreenWidth - (x3 + width3)), color->r, color->g, color->b, color->a,
-        //     // Lower left
-        //     (y + height), (nomScreenWidth - x3), color->r, color->g, color->b, color->a
-        // );
     #else
         S2D_DrawQuad(
             // Upper left
@@ -207,16 +204,7 @@ void drawRing(Ring *ring){
             // Lower left
             x2, (y + height), color->r, color->g, color->b, color->a
         );
-        // S2D_DrawQuad(
-        //     // Upper left
-        //     x3, y, 1, 1, 1, 1,
-        //     // Upper right
-        //     (x3 + width3), y, 1, 1, 1, 1,
-        //     // Lower right
-        //     (x3 + width3), (y + height), 1, 1, 1, 1,
-        //     // Lower left
-        //     x3, (y + height), 1, 1, 1, 1
-        // );
+
     #endif
 }
 

@@ -308,7 +308,6 @@ void drawShip(Capsule *cap){
 
 void drawHeatBar(Capsule *cap, int x, int y){
     float heatPercent = cap->heat / 100.00;
-    printf("Heat Percent = %f\n", heatPercent);
     if (cap->heat < 1){
       drawBar(x, y, 280, 40, 0, &green);
     }

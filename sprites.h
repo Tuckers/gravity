@@ -11,6 +11,12 @@ typedef struct Sprite {
     int width;
 } Sprite;
 
+typedef struct Animation {
+    int frame;
+    int first;
+    int last;
+} Animation;
+
 Sprite numberFont50;
 S2D_Sprite *numberFont50img;
 double nf50Sheet[10][4] = {
@@ -60,7 +66,7 @@ double nf80Sheet[10][4] = {
 
 Sprite gameSprite;
 S2D_Sprite *gameImg;
-double gameSheet[20][4] = {
+double gameSheet[21][4] = {
     {	0	,	0	,	280	,	180	}, // 0 - Select players
     {	0	,	180	,   280	,	180	}, // 1 - Select your ship
     {	0	,	360	,   152	,	36	}, // 2 - Ship stat - Control
@@ -80,7 +86,8 @@ double gameSheet[20][4] = {
     {	902	,	0   ,	450	,	540	}, //  16 - Select ship big 2
     {	574	,	587 ,	450	,	540	}, //  17 - Select ship big 3
     {	1076,	587 ,	450	,	540	}, //  18 - Select ship big 4
-    {	1377,	0   ,	450	,	540	} //  19 - Select ship big 5
+    {	1377,	0   ,	450	,	540	}, //  19 - Select ship big 5
+    { 0 ,  1892 ,  48 , 48} // 20 - Meter marker
 };
 
     // {	0	,	320	,	550	,	143	}, // 6 - Troposphere
@@ -116,7 +123,7 @@ void defineImages() {
         numberFont300img = S2D_CreateSprite("number_font_300px.png");
     #endif
     numberFont50img->x = 48;
-    numberFont50img->y = 46;
+    numberFont50img->y = 48;
     numberFont50.spr = numberFont50img;
     numberFont50.frames = 10;
     numberFont50.sheet = &nf50Sheet[0];
@@ -167,8 +174,16 @@ int numPlaces(int n){
     return 10;
 }
 
-void drawNumber(Sprite *sprite, int n, int x, int y){
+void drawNumber(Sprite *sprite, int n, int x, int y, char *alignment){
+    int right = strncmp(alignment, "right", 5);
+    int left = strncmp(alignment, "left", 4);
     int digits = numPlaces(n);
+    if (right == 0){
+       x = x - (digits * sprite->sheet[0][3]);
+    }
+    if (left == 0){
+       x = x;
+    }
     for (int i = digits; i>0; i--){
         // draw digits in order from right to left
 
@@ -194,11 +209,34 @@ void drawNumber(Sprite *sprite, int n, int x, int y){
     }
 }
 
-typedef struct Animation {
-    int frame;
-    int first;
-    int last;
-} Animation;
+void drawSprite2(Sprite *sprite, Animation *ani, int x, int y){
+    int frame = ani->first + ani->frame;
+    #ifdef ROTATE
+        S2D_ClipSprite(sprite->spr, sprite->sheet[frame][1], (sprite->width - sprite->sheet[frame][0] - sprite->sheet[frame][2]), sprite->sheet[frame][3], sprite->sheet[frame][2]);
+        sprite->spr->x = y;
+        sprite->spr->y = nomScreenWidth - x - sprite->sheet[frame][2];
+    #else
+        S2D_ClipSprite(sprite->spr, sprite->sheet[frame][0], sprite->sheet[frame][1], sprite->sheet[frame][2], sprite->sheet[frame][3]);
+        sprite->spr->x = x;
+        sprite->spr->y = y;
+    #endif
+    S2D_DrawSprite(sprite->spr);
+}
+
+Animation meterMarker = {
+    .frame = 0,
+    .first = 20,
+    .last = 20
+};
+
+void drawAltitude(int n){
+    int digits = numPlaces(n);
+    int x = (nomScreenWidth / 2) - ((digits + 1) * 46 / 2);
+    int markerX = (nomScreenWidth / 2) + (digits * 46 / 2);
+    int y = 40;
+    drawNumber(&numberFont50, n, x, y, "left");
+    drawSprite2(&gameSprite, &meterMarker,  markerX, y);
+}
 
 Animation bgShip1 = {
     .frame = 0,
@@ -312,20 +350,6 @@ Animation twoPAni = {
     .last = 5
 };
 
-
-void drawSprite2(Sprite *sprite, Animation *ani, int x, int y){
-    int frame = ani->first + ani->frame;
-    #ifdef ROTATE
-        S2D_ClipSprite(sprite->spr, sprite->sheet[frame][1], (sprite->width - sprite->sheet[frame][0] - sprite->sheet[frame][2]), sprite->sheet[frame][3], sprite->sheet[frame][2]);
-        sprite->spr->x = y;
-        sprite->spr->y = nomScreenWidth - x - sprite->sheet[frame][2];
-    #else
-        S2D_ClipSprite(sprite->spr, sprite->sheet[frame][0], sprite->sheet[frame][1], sprite->sheet[frame][2], sprite->sheet[frame][3]);
-        sprite->spr->x = x;
-        sprite->spr->y = y;
-    #endif
-    S2D_DrawSprite(sprite->spr);
-}
 
 
 // OLD SPRITES

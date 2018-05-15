@@ -212,12 +212,12 @@ void updatePlayerSelect (Player *player, Selector *selector){
 void drawPlayerSelect(Selector *selector){
     drawRectangle(0,0, nomScreenWidth, nomScreenHeight, &darkBlue);
     if (selector->timeRemaining < 10){
-        drawNumber(&numberFont300, 0, 40, 1340);
-        drawNumber(&numberFont300, selector->timeRemaining, 210, 1340);
+        drawNumber(&numberFont300, 0, 40, 1340, "left");
+        drawNumber(&numberFont300, selector->timeRemaining, 210, 1340, "left");
     }
     else {
-        drawNumber(&numberFont300, 1, 70, 1340);
-        drawNumber(&numberFont300, 0, 210, 1340);
+        drawNumber(&numberFont300, 1, 70, 1340, "left");
+        drawNumber(&numberFont300, 0, 210, 1340, "left");
     }
     if (selector->p1Selection == 1){
         drawRectangle(40, 40, 500, 1242, &blue);
@@ -353,12 +353,12 @@ void drawStats(Ship *ship){
 void drawShipSelect(Selector *selector){
     drawRectangle(0,0, nomScreenWidth, nomScreenHeight, &darkBlue);
     if (selector->timeRemaining < 10){
-        drawNumber(&numberFont300, 0, 700, 1618);
-        drawNumber(&numberFont300, selector->timeRemaining, 870, 1618);
+        drawNumber(&numberFont300, 0, 700, 1618, "left");
+        drawNumber(&numberFont300, selector->timeRemaining, 870, 1618, "left");
     }
     else {
-        drawNumber(&numberFont300, 1, 730, 1618);
-        drawNumber(&numberFont300, 0, 870, 1618);
+        drawNumber(&numberFont300, 1, 730, 1618, "left");
+        drawNumber(&numberFont300, 0, 870, 1618, "left");
     }
     switch(selector->p1Selection){
         case 1:
@@ -409,6 +409,7 @@ void update() {
             updateBKG(&background);
             break;
         case 5: //Gameplay
+            game.altitude -= 9;
             if (firstTime == true){
                 generateRings(&rm1);
                 generateCapPoints(&capsule1, cpA1, cpT1, 10, false);
@@ -445,15 +446,17 @@ void render() {
             //drawRingDemo(&rm1, &ringTest);
             break;
         case 5: //Gameplay
+            drawBKG(&background);
             if (firstTime == false){
                 drawRingmaster(&rm1);
                 drawShip(&capsule1);
                 drawHeatBar(&capsule1, 40, nomScreenHeight - 154);
-                drawNumber(&numberFont50, player1.score, 40, nomScreenHeight - 88);
+                drawAltitude(game.altitude);
+                drawNumber(&numberFont50, player1.score, 40, nomScreenHeight - 88, "left");
                 //drawNumber(&numberFont50, capsule1.heat, 40, nomScreenHeight - 48);
                 if (game.players == 2){
                     drawShip(&capsule2);
-                    drawNumber(&numberFont50, player2.score, nomScreenWidth - 100, nomScreenHeight - 88);
+                    drawNumber(&numberFont50, player2.score, nomScreenWidth - 40, nomScreenHeight - 88, "right");
                     drawHeatBar(&capsule2, nomScreenWidth - 320, nomScreenHeight - 154);
                 }
             }

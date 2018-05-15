@@ -14,7 +14,7 @@ typedef struct BKG {
 } BKG;
 
 BKG background = {
-    .color1 = &black,
+    .color1 = &darkBlue,
     .color2 = &darkBlue
 };
 
