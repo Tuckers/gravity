@@ -60,6 +60,59 @@ void drawTriangle(Point *v1, Point *v2, Point *v3, S2D_Color *color){
     #endif
 }
 
+void rotatePoint(Point *point, float degrees){
+  int x = point->x;
+  int y = point->y;
+  point->x = x * cos(degrees) - y * sin(degrees);
+  point->y = y * cos(degrees) + x * sin(degrees);
+}
+
+void drawShockwave(int x, int y, int width, int height, float degrees, S2D_Color *color){
+  Point v1 = {
+    .x = (-width / 2),
+    .y = (-height)
+  };
+  Point v2 = {
+    .x = (width / 2),
+    .y = (-height)
+  };
+  Point v3 = {
+    .x = 0,
+    .y = (25)
+  };
+  rotatePoint(&v1, degrees);
+  rotatePoint(&v2, degrees);
+  rotatePoint(&v3, degrees);
+  //
+  // v1.x += x + width / 2 - rand() % 50;
+  // v2.x += x + width / 2 - rand() % 50;
+  // v3.x += x + width / 2;
+  // v1.y += y + height / 2 - rand() % 50;
+  // v2.y += y + height / 2 - rand() % 50;
+  // v3.y += y + height / 2;
+  v1.x += x - rand() % 25 + 25;
+  v2.x += x + rand() % 25 + 25;
+  v3.x += x + 25;
+  v1.y += y - rand() % 5 + 25;
+  v2.y += y - rand() % 5 + 25;
+  v3.y += y + 40;
+
+  float bMod = (rand() % 5 / 1) + .4;
+  #ifdef ROTATE
+      S2D_DrawTriangle(
+          v1.y, (nomScreenWidth - v1.x), color->r, color->g, bMod, 0,
+          v2.y, (nomScreenWidth - v2.x), color->r, color->g, bMod, 0,
+          v3.y, (nomScreenWidth - v3.x), color->r, color->g, bMod, .75
+      );
+  #else
+      S2D_DrawTriangle(
+          v1.x, v1.y, color->r, color->g, bMod, 0,
+          v2.x, v2.y, color->r, color->g, bMod, 0,
+          v3.x, v3.y, color->r, color->g, bMod, .75
+      );
+  #endif
+}
+
 void drawParticle(int size, int x, int y, S2D_Color *color){
     #ifdef ROTATE
     S2D_DrawTriangle(

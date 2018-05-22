@@ -436,6 +436,9 @@ void render() {
             break;
         case 2: //Player # selection
             drawPlayerSelect(&playerSelect);
+            int shockHeight = 600;
+            int shockWidth = 400;
+            //drawShockwave(290, 860, shockHeight, shockWidth, 1.5708, &yellow);
             break;
         case 3: //Ship selection
             drawShipSelect(&shipSelect);

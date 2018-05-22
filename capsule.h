@@ -274,6 +274,7 @@ void rotateShip(Capsule *cap, float degrees){
     }
 }
 
+
 void drawShip(Capsule *cap){
     int shipSize = cap->shipSize / 2;
     if (cap->heat == 100){
@@ -304,6 +305,7 @@ void drawShip(Capsule *cap){
             }
         }
     }
+    drawShockwave(cap->x, cap->y, 200, 2 * cap->heat, (-cap->velX / 50), &yellow);
 }
 
 void drawHeatBar(Capsule *cap, int x, int y){
