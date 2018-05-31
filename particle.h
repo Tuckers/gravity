@@ -26,23 +26,39 @@ typedef struct Explosion {
     int quantity;
     Particle particles[100];
     bool generated;
+    bool completed;
     int count;
 } Explosion;
 
-Explosion kaboom = {
-    .startSize = 50,
+Explosion p1E = {
+    .startSize = 100,
     .maxVelX = 10,
     .maxVelY = 20,
     .maxLife = 120,
     .minLife = 20,
-    .magnitude = 200,
+    .magnitude = 300,
     .quantity = 100,
     .count = 0,
-    .generated = false
+    .generated = false,
+    .completed = false
+};
+
+Explosion p2E = {
+    .startSize = 100,
+    .maxVelX = 10,
+    .maxVelY = 20,
+    .maxLife = 120,
+    .minLife = 20,
+    .magnitude = 300,
+    .quantity = 100,
+    .count = 0,
+    .generated = false,
+    .completed = false
 };
 
 void explode(Explosion *e, int x, int y){
     if (e->count == e->maxLife){
+        e->completed = true;
         e->generated = false;
         e->count = 0;
     }
@@ -104,7 +120,7 @@ void drawParticles(Explosion *e){
         if (e->particles[i].life > 0){
             if (e->particles[i].x < (e->x + e->magnitude) && e->particles[i].x > (e->x - e->magnitude)){
                 if (e->particles[i].y < (e->y + e->magnitude) && e->particles[i].y > (e->x - e->magnitude)){
-                    partColor.a = e->particles[i].life / 10;
+                    partColor.a = e->particles[i].life % 10;
                     partColor.g = (e->maxLife / 6) / e->particles[i].life;
                     partColor.b = (e->maxLife / 6) / e->particles[i].life;
                     drawParticle(e->particles[i].size, e->particles[i].x, e->particles[i].y, &partColor);

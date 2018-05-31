@@ -409,6 +409,7 @@ void update() {
             updateBKG(&background);
             break;
         case 5: //Gameplay
+
             game.altitude -= 9;
             if (firstTime == true){
                 generateRings(&rm1);

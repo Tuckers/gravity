@@ -41,6 +41,8 @@ typedef struct Capsule {
     S2D_Color *color;
     Player *player;
     S2D_Sprite *spr;
+    Explosion *explosion;
+    bool exploded;
     Movement *left;
     Movement *right;
     Movement *down;
@@ -64,6 +66,8 @@ Capsule capsule1 = {
     .braking = false,
     .player = &player1,
     .color = &white,
+    .explosion = &p1E,
+    .exploded = false,
 #ifdef ROTATE
     .left = &capRight,
     .right = &capLeft,
@@ -92,6 +96,8 @@ Capsule capsule2 = {
     .braking = false,
     .player = &player2,
     .color = &white,
+    .explosion = &p2E,
+    .exploded = false,
 #ifdef ROTATE
     .left = &capRight,
     .right = &capLeft,
@@ -276,11 +282,13 @@ void rotateShip(Capsule *cap, float degrees){
 
 
 void drawShip(Capsule *cap){
-    int shipSize = cap->shipSize / 2;
-    if (cap->heat == 100){
-        drawParticles(&kaboom);
+    if (cap->exploded == true){
+      if (cap->explosion->completed == false){
+        drawParticles(cap->explosion);
+      }
     }
     else {
+        int shipSize = cap->shipSize / 2;
         if (cap->hollow == true){
             ///// HOLLOW RENDERING /////
             for (int i = 0; i < shipSize; i++){
@@ -304,8 +312,9 @@ void drawShip(Capsule *cap){
                 drawQuad(cap->transPoints[0], cap->transPoints[1], cap->transPoints[2], cap->transPoints[4], cap->color);
             }
         }
-    }
     drawShockwave(cap->x, cap->y, 200, 2 * cap->heat, (-cap->velX / 50), &yellow);
+    }
+
 }
 
 void drawHeatBar(Capsule *cap, int x, int y){
@@ -326,7 +335,6 @@ void drawHeatBar(Capsule *cap, int x, int y){
 
 void updateShip(Capsule *cap){
     //Level currentLevel = game.levels[game.level];
-
     // Braking
     if (cap->player->left == true && cap->player->right == true){
         if (cap->braking == false){
@@ -339,6 +347,7 @@ void updateShip(Capsule *cap){
         cap->heat += 1;
         cap->velY = cap->velY - 0.1;
         if (cap->heat > 100){
+            cap->exploded = true;
             cap->heat = 100;
         }
         if (cap->driftY < -cap->maxY){
@@ -425,6 +434,9 @@ void updateShip(Capsule *cap){
         cap->velX = 0;
     }
     rotateShip(cap, (-cap->velX / 50));
+    if (cap->exploded == true){
+        explode(cap->explosion, cap->x, cap->y);
+    }
 }
 
 #endif /* CAPSULE_H */
